@@ -45,7 +45,6 @@ function public.construct_defaults()
 end
 
 function public.get( identifier )
-    print('attempt to get configuration for', tostring(identifier))
     if identifier == nil then return cache.core end
     return cache.components[identifier]
 end

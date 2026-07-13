@@ -10,7 +10,7 @@ local stat = base.extend("Config.Monster.Stat")
 stat.config = {
     minimum = 0, maximum = 255, range = {
         mode = modes.raw,
-        range = 30
+        value = 30
     },
     originalPull = 1.00
 }
@@ -18,7 +18,7 @@ stat.config = {
 function stat:get_default_value()
     return {
         minimum = self.config.minimum, maximum = self.config.maximum,
-        range = {mode = self.config.range.mode, range = self.config.range.range},
+        range = {mode = self.config.range.mode, value = self.config.range.value},
         originalPull = self.config.originalPull
     }
 end
@@ -40,7 +40,7 @@ function stat:stringify()
         self.config.minimum,
         self.config.maximum,
         self.config.range.mode,
-        self.config.range.range,
+        self.config.range.value,
         self.config.originalPull
     )
 end
@@ -49,14 +49,14 @@ end
 function stat:with_defaults(min, max, range, pull)
     return setmetatable({config = {
         minimum = min or 0, maximum = max or 255, range = range and {
-            mode = modes[range.mode and string.lower(range.mode) or 'raw'], range = range.range or 30
+            mode = modes[range.mode and string.lower(range.mode) or 'raw'], value = range.value or 30
         } or {mode = modes.raw, range = 30}, originalPull = pull or 1.00
     }}, stat)
 end
 
 ---@return Config.Stat
 function stat.new()
-    return setmetatable({config = {minimum = 0, maximum = 255, range = {mode = modes.raw, range = 30}, originalPull = 1.00}}, stat)
+    return setmetatable({config = {minimum = 0, maximum = 255, range = {mode = modes.raw, value = 30}, originalPull = 1.00}}, stat)
 end
 
 return stat.new

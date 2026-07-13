@@ -64,3 +64,5 @@ Settings:
         Solves the replay issue and makes it easier to share with others.
         After generation, prompt the user to reload mods.
         Include the configuration inside the folder as well.
+    [ ] Spoiler Logging
+        That is, noting down every single change in one really massive file for users to look through.
