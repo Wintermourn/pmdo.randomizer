@@ -1,0 +1,12 @@
+<Header>
+    <Namespace>pmdorand</Namespace>
+    <Name>PMDO Randomizer</Name>
+    <Author>Wintermourn</Author>
+    <Description>Allows randomization of many aspects of PMDO. Play with it to your heart's content!</Description>
+
+    <UUID>019f4afe-e16e-734e-aebb-05e908454357</UUID>
+
+    <Version>4.0.0</Version>
+    <GameVersion>0.8.11</GameVersion>
+    <ModType>Mod</ModType>
+</Header>
