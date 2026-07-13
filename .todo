@@ -1,0 +1,66 @@
+Randomizer:
+    Monster:
+        [ ] Stats
+        [ ] Typing
+            A couple ways to handle incompatible types: -
+              * manual list of "type A cannot go with type B"
+              * use type effectivity (type A cannot be super effective against type B)
+        [ ] Moves
+        [ ] Intrinsics
+        [ ] Evolutions
+    Item:
+        [ ] Sprites
+        [ ] Stats
+            Price, Rarity, MaxStack, ArcThrow, BreakOnThrow, UsageType
+        [ ] Effects
+            [ ] Apricorn Types
+    Skill:
+        [ ] Typing
+            Element, Phys/Spec/Stat
+        [ ] Stats
+            Power, Accuracy
+        [ ] Effects
+    Intrinsic:
+        [ ] Effects
+    Status:
+        [ ] Stats
+            CarryOver, MenuName
+        [ ] Effects
+    Terrain:
+        This is probably too silly to actually add, right?
+        [ ] Minimap Color
+        [ ] Stats
+            ItemLand, ItemDraw, ItemAllow, BlockLight, BlockDiagonal, BlockType
+        [ ] Effects
+            oh god
+    Zone:
+        [ ] Stats
+            NoEXP, ExpPercent, LevelCap, TeamRestrict, BagRestrict, KeepTreasure, 
+    Naming:
+        [ ] Monsters
+        [ ] Items
+        [ ] Skills
+        [ ] Intrinsics
+        [ ] Statuses
+        [ ] Terrain(?)
+        [ ] Zones
+UI:
+    [ ] Main Menu
+    [ ] Saved Settings/Presets
+        Should these be stored in `SAVE/MODS/pmdorand`? Probably, right?
+    [ ] Settings
+Registries:
+    Effects:
+        [ ] Item
+        [ ] Skill
+        [ ] Intrinsic
+        [ ] Status
+        [ ] Terrain
+Settings:
+    [ ] Always Flush
+        After a pass iterates over a monster, write it to disk and forget about it.
+        This means the data will not be stored in memory until the final related pass, but this also means a lot more writing to disk and checking diffs.
+    [ ] Export to Mod
+        Solves the replay issue and makes it easier to share with others.
+        After generation, prompt the user to reload mods.
+        Include the configuration inside the folder as well.
