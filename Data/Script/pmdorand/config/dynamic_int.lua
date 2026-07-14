@@ -46,9 +46,13 @@ end
 
 function int:clamp() self.should_clamp = true; return self end
 
-function int:validate(t)
+function int:validate(t, enforce)
     if type(t) ~= 'number' then return false, ('Value is not integer (got \'%s\')'):format(type(t)) end
     if t % 1 ~= 0 then return false, 'Value is not integer (has decimal)' end
+    if enforce then
+        local min, max = self:get_minimum_value(), self:get_maximum_value()
+        if enforce and (t < min or t > max) then print(('Value is outside reasonable bounds (expected [%d, %d], got %f)'):format(min, max, t)) end
+    end
     return true
 end
 

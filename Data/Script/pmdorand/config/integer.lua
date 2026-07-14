@@ -12,9 +12,17 @@ function int:get_default_value()
     return self.default
 end
 
-function int:validate(t)
+function int:clamp_value(v)
+    return math.max(self.minimum, math.min(v, self.maximum))
+end
+
+function int:validate(t, enforce)
     if type(t) ~= 'number' then return false, ('Value is not integer (got \'%s\')'):format(type(t)) end
     if t % 1 ~= 0 then return false, 'Value is not integer (has decimal)' end
+    if enforce then
+        local min, max = self.minimum, self.maximum
+        if enforce and (t < min or t > max) then print(('Value is outside reasonable bounds (expected [%d, %d], got %f)'):format(min, max, t)) end
+    end
     return true
 end
 

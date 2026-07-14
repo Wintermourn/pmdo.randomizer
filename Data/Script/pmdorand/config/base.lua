@@ -5,8 +5,17 @@ function _conf:__index(key)
 end
 
 function _conf:get_default_value() return {} end
+
+--- Requires that validation enforce things like minimum and maximum values.
+--- <br><b>It is recommended to only use this if out-of-bounds values cause errors.</b>
+function _conf:always_enforce_limits()
+    self.enforce_limits = true
+    return self
+end
+
+---@param enforce_limits boolean?
 ---@return boolean, string?
-function _conf:validate(v) return true end
+function _conf:validate(v, enforce_limits) return true end
 function _conf:__tostring()
     local my_value = self:stringify()
     return ("<%s>%s"):format(self.__title or "Unnamed Config Class", my_value and (' '.. my_value) or '')

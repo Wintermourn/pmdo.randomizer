@@ -16,7 +16,7 @@ function matchup:get_default_value()
     return self:validate(self.default) and self.default or {}
 end
 
-function matchup:validate(t)
+function matchup:validate(t, enforce)
     for i,k in pairs(t) do
         if type(k) ~= 'table' then goto skip end
 
@@ -26,7 +26,7 @@ function matchup:validate(t)
         
         for c,v in pairs(k) do
             if self.shape[c] then
-                local res, msg = self.shape[c]:validate(v)
+                local res, msg = self.shape[c]:validate(v, enforce)
                 ---@diagnostic disable-next-line: invert-if
                 -- propagate invalid results
                 if res == false then return false, ('Validation failed in matchup entry \'%s\': "%s"'):format(i, msg) end

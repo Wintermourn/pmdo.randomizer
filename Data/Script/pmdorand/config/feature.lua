@@ -24,7 +24,7 @@ local required_fields = {
     randomization_chance = true
 }
 
-function ftr:validate(t)
+function ftr:validate(t, enforce)
     for i,k in pairs(t) do
 
         if required_fields[i] then goto continue end
@@ -35,7 +35,7 @@ function ftr:validate(t)
         
         local child = self.content[i]
         if child ~= nil then
-            local res, msg = child:validate(k)
+            local res, msg = child:validate(k, enforce)
             -- propagate invalid results
             if res == false then return false, ('Validation failed in table entry \'%s\': "%s"'):format(i, msg) end
         end

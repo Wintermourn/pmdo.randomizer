@@ -15,7 +15,7 @@ function tbl:get_default_value()
     return v
 end
 
-function tbl:validate(t)
+function tbl:validate(t, enforce)
     for i,k in pairs(t) do
 
         if not self.content[i] then
@@ -25,7 +25,7 @@ function tbl:validate(t)
         ---@type Config.Base
         local child = self.content[i]
         if child ~= nil then
-            local res, msg = child:validate(k)
+            local res, msg = child:validate(k, enforce)
             -- propagate invalid results
             if res == false then return false, ('Validation failed in table entry \'%s\': "%s"'):format(i, msg) end
         end

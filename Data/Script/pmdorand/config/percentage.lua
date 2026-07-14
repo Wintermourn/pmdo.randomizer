@@ -11,9 +11,9 @@ function per:get_default_value()
     return self.default
 end
 
-function per:validate(t)
+function per:validate(t, enforce)
     if type(t) ~= 'number' then return false, ('Value is not percentage (got \'%s\')'):format(type(t)) end
-    if t < 0 or t > 1 then print(('Value is outside reasonable bounds (expected [0, 1], got %f)'):format(t)) end
+    if enforce and (t < 0 or t > 1) then print(('Value is outside reasonable bounds (expected [0, 1], got %f)'):format(t)) end
     return true
 end
 

@@ -23,13 +23,16 @@ function stat:get_default_value()
     }
 end
 
-function stat:validate(v)
+function stat:validate(v, enforce)
     local typing = type(v)
     if typing ~= 'table' then
         if typing == 'number' then return true end
         return false, ('Stat must be in table format (got \'%s\')'):format(type(v))
     end
-    if v.minimum < 0 then return false, 'Stat minimum must be positive or zero' end
+    if enforce then
+        if v.minimum < 0 then return false, 'Stat minimum must be positive or zero' end
+    end
+    if v.maximum < v.minimum then v.maximum = v.minimum end
     if v.range.range < 0 then v.range.range = v.range.range * -1 end
     if not modes[string.lower(v.range.mode)] then v.range.mode = modes.raw end
     return true

@@ -7,17 +7,23 @@ float.minimum = 0
 float.maximum = 50
 float.default = 20
 float.step_size = 1
-float.should_clamp = false
 
 ---@return integer
 function float:get_default_value()
     return self.default
 end
 
-function float:clamp() self.should_clamp = true; return self end
+function float:clamp_value(v)
+    return math.max(self.minimum, math.min(v, self.maximum))
+end
 
-function float:validate(t)
+function float:validate(t, enforce)
     if type(t) ~= 'number' then return false, ('Value is not integer (got \'%s\')'):format(type(t)) end
+    if t % 1 ~= 0 then return false, ('Value is not integer (has decimal)') end
+    if enforce then
+        local min, max = self.minimum, self.maximum
+        if enforce and (t < min or t > max) then print(('Value is outside reasonable bounds (expected [%d, %d], got %f)'):format(min, max, t)) end
+    end
     return true
 end
 
