@@ -6,4 +6,4 @@ Data/Skill
 Data/Universal.json
 
 # C# libraries for Archipelago. Not currently important.
-Libraries/**
+Libraries/*.dll
