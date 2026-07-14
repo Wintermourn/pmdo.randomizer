@@ -1,6 +1,7 @@
 local interlace = require 'lib.pmdorand.interlace'
 local header = interlace .get_active_mod_by_uuid '019f4afe-e16e-734e-aebb-05e908454357'
-local nyaml = require 'lib.pmdorand.nyaml' (header.Path, 'Libraries', 'SharpYaml.dll')
+local nyaml = require 'lib.pmdorand.nyaml'
+nyaml(header.Path, 'Libraries', 'SharpYaml.dll')
 
 local IO = luanet.namespace 'System.IO'
 
@@ -71,14 +72,22 @@ function public.save( name )
     if not IO.Directory.Exists(base_path) then
         IO.Directory.CreateDirectory(base_path)
     end
-    IO.File.WriteAllText(save_path, nyaml.serialize({
-        versioning = {
-            mod = header.Version:ToString(),
-            game = interlace.get_game_header().Version:ToString()
-        },
-        core = cache.core,
-        components = cache.components
-    }))
+    IO.File.WriteAllText(save_path, nyaml.serialize(
+        setmetatable({
+            versioning = {
+                mod = header.Version:ToString(),
+                game = interlace.get_game_header().Version:ToString()
+            },
+            core = cache.core,
+            components = cache.components
+        }, {
+            __nyamlKeyOrder = {
+                'versioning',
+                'core',
+                'components'
+            }
+        })
+    ))
 end
 
 return public

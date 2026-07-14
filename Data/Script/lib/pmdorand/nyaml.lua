@@ -3,19 +3,22 @@
     made by Wintermourn
 
     dependencies:
-        - A compiled copy of SharpYaml.
+        - A compiled copy of SharpYaml 2.1.
 
     notes:
         - The path to SharpYaml must be passed to the library by calling the returned function with the path, or segments of it, as arguments, ending with the filename.
             e.g. `require 'nyaml' ('MODS/my_mod', 'Libraries', 'SharpYaml.dll')`
             - The game's base APP_PATH will be added to the start automatically.
-        - Tags can be applied to tables by adding `__nyamlTag` to the metatable. The value must be a string.
-        - `__nyamlUnwrap` can be used to add tags to non-table values and to have non-table output (like strings, numbers, booleans, nil)
-            - The value can be a function (fun(v): nyaml.to_yaml).
-            - The value can be a key in the table. For example, a metatable {__nyamlUnwrap = "key"} on a table {key = "true"} will convert to the string "true"
-        - `__nyamlType` is used to explicitly set the types of values.
-            - a `__nyamlType` of `null` is used for explicitly null values, to differentiate from `undefined` ones.
-            - a `__nyamlType` of `array` can be used on tables with only numeric keys. Gaps will automatically be filled with null.
+        - Various values can be added to metatables to adjust how the library works:
+            - `__nyamlTag`: Applies a tag to the attached table.
+            - `__nyamlUnwrap`: Used to apply things like tags to non-table values. The value can be a function or a string.
+                - e.g. `{alpha = setmetatable({value = "test"}, {__nyamlUnwrap = "test", __nyamlTag = "tag"})}` creates `alpha: !tag "test"`
+            - `__nyamlType`: Can be used to force the output type. Supports the following values:
+                - `null`: explicitly outputs null instead of skipping.
+                - `array`: forces the output to fill gaps between keys with null.
+                - `object`: forces a table to always output keys.
+            - `__nyamlKeyOrder`: Can be used to force the order of an object's keys. Must be a list of keys (`string[]`).
+                - Keys not defined in the list will still be included in the output.
 ]]
 
 if luanet == nil then
@@ -49,6 +52,7 @@ local sentinel = _G.__nyaml_sentinel
 
 local null_value = setmetatable({ __nyamlType = 'null' }, { __newindex = function() error 'null value is immutable' end, __tostring = function() return 'null' end })
 local array_mt = { __nyamlType = 'array' }
+local object_mt = { __nyamlType = 'object' }
 local blank = {}
 
 local keywords = {
@@ -59,9 +63,20 @@ local keywords = {
     ['false'] = false,
 }
 
+local mt = {}
+---@class nyaml
+---@overload fun(path: string, ...: string)
+local out = setmetatable({
+    __VERSION = 1.3,
+    values = {
+        null = null_value
+    },
+    helpers = {}
+}, mt)
+
 ---@param path string?
 ---@return nyaml
-function output( path, ... )
+function mt.__call( self, path, ... )
     local app_path = RogueEssence.PathMod.APP_PATH
     path = __Path.GetFullPath(__Path.Combine( app_path, path, ... ))
     if path:sub(1, #app_path) ~= app_path then
@@ -92,15 +107,8 @@ function output( path, ... )
     local type_YamlMappingNode = previous_sharpyaml_instance:GetType 'SharpYaml.Serialization.YamlMappingNode'
     local type_YamlSequenceNode = previous_sharpyaml_instance:GetType 'SharpYaml.Serialization.YamlSequenceNode'
     local type_YamlScalarNode = previous_sharpyaml_instance:GetType 'SharpYaml.Serialization.YamlScalarNode'
+    local type_YamlAliasNode = previous_sharpyaml_instance:GetType 'SharpYaml.Serialization.YamlAliasNode'
 
-    ---@class nyaml
-    local out = {
-        __VERSION = 1.0,
-        values = {
-            null = null_value
-        },
-        helpers = {}
-    }
 
     do -- Deserialization
         local function deobjectify_node(node, handlers, visited)
@@ -188,8 +196,6 @@ function output( path, ... )
 
     do -- Serialization
         local function is_sequential_table( tbl )
-            local mt = getmetatable(tbl)
-            if mt and mt.__nyamlType == array_mt.__nyamlType then return true end
             local final_size, max_key = 0,0
             for i in pairs(tbl) do
                 if type(i) ~= 'number' or i < 1 or i % 1 ~= 0 then return false end
@@ -238,11 +244,21 @@ function output( path, ... )
 
             local visitation = visited[v]
             if visitation then
+                local v_type = visitation:GetType()
+
                 if not visitation.Anchor or visitation.Anchor == '' then
                     visitation.Anchor = 'ref'.. anchor_state.count
                     anchor_state.count = anchor_state.count + 1
                 end
-                return visitation
+
+                local aliased
+                if v_type == type_YamlSequenceNode then
+                    aliased = __Activator.CreateInstance(type_YamlSequenceNode)
+                elseif v_type == type_YamlMappingNode then
+                    aliased = __Activator.CreateInstance(type_YamlMappingNode)
+                end
+                aliased.Anchor = visitation.Anchor
+                return aliased
             end
 
             local mtt = getmetatable(v) or blank
@@ -271,13 +287,13 @@ function output( path, ... )
                 return node
             end
 
-            if mtt.__nyamlType == array_mt.__nyamlType or is_sequential_table(v) then
+            if mtt.__nyamlType == array_mt.__nyamlType or (mtt.__nyamlType ~= object_mt.__nyamlType and is_sequential_table(v)) then
                 node = __Activator.CreateInstance(type_YamlSequenceNode)
                 local max = get_max_key(v)
                 local item
                 for i = 1, max do
                     item = v[i]
-                    if item then
+                    if item ~= nil then
                         node:Add(objectify_node(item, visited, anchor_state)) 
                     else
                         node:Add(__Activator.CreateInstance(type_YamlScalarNode, 'null'))
@@ -285,8 +301,24 @@ function output( path, ... )
                 end
             else
                 node = __Activator.CreateInstance(type_YamlMappingNode)
-                for k, v in pairs(v) do
-                    node:Add(objectify_node(k, visited, anchor_state), objectify_node(v, visited, anchor_state))
+                if type(mtt.__nyamlKeyOrder) == 'table' then
+                    local keys = {}
+                    for k in pairs(v) do
+                        keys[k] = true
+                    end
+                    for _, k in ipairs(mtt.__nyamlKeyOrder) do
+                        if keys[k] then
+                            node:Add(objectify_node(k, visited, anchor_state), objectify_node(v[k], visited, anchor_state))
+                            keys[k] = nil
+                        end
+                    end
+                    for k in pairs(keys) do
+                        node:Add(objectify_node(k, visited, anchor_state), objectify_node(v[k], visited, anchor_state))
+                    end
+                else
+                    for k, v in pairs(v) do
+                        node:Add(objectify_node(k, visited, anchor_state), objectify_node(v, visited, anchor_state))
+                    end
                 end
             end
             visited[v] = node
@@ -299,6 +331,7 @@ function output( path, ... )
         end
 
         ---@param ... nyaml.to_yaml
+        ---@return string
         function out.serialize(...)
             local stream = __Activator.CreateInstance(type_YamlStream)
 
@@ -314,35 +347,35 @@ function output( path, ... )
         end
     end
 
-    do -- Helpers
-        function out.helpers.combine_path(...)
-            local args = {}
-            for i, k in ipairs {...} do args[i] = tostring(k) end
-            return __Path.Combine(unpack(args))
-        end
-
-        if RogueEssence ~= nil then
-            local pathmod = RogueEssence.PathMod
-            local getmodfromns = pathmod.GetModFromNamespace
-            local getmodfromuuid = pathmod.GetModFromUuid
-
-            function out.helpers.get_mod_path_from_namespace( namespace )
-                local mod = getmodfromns(namespace)
-                if mod.Path == '' then return end
-                return __Path.Combine(pathmod.APP_PATH, mod.Path)
-            end
-
-            function out.helpers.get_mod_path_from_uuid( uuid )
-                local success, uuid = pcall(__Guid, uuid)
-                if not success then return end
-                local mod = getmodfromuuid(uuid)
-                if mod.Path == '' then return end
-                return __Path.Combine(pathmod.APP_PATH, mod.Path)
-            end
-        end
-    end
-
     return out
 end
 
-return output
+do -- Helpers
+    function out.helpers.combine_path(...)
+        local args = {}
+        for i, k in ipairs {...} do args[i] = tostring(k) end
+        return __Path.Combine(unpack(args))
+    end
+
+    if RogueEssence ~= nil then
+        local pathmod = RogueEssence.PathMod
+        local getmodfromns = pathmod.GetModFromNamespace
+        local getmodfromuuid = pathmod.GetModFromUuid
+
+        function out.helpers.get_mod_path_from_namespace( namespace )
+            local mod = getmodfromns(namespace)
+            if mod.Path == '' then return end
+            return __Path.Combine(pathmod.APP_PATH, mod.Path)
+        end
+
+        function out.helpers.get_mod_path_from_uuid( uuid )
+            local success, uuid = pcall(__Guid, uuid)
+            if not success then return end
+            local mod = getmodfromuuid(uuid)
+            if mod.Path == '' then return end
+            return __Path.Combine(pathmod.APP_PATH, mod.Path)
+        end
+    end
+end
+
+return out
