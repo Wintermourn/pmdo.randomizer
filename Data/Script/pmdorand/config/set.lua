@@ -1,5 +1,5 @@
 local base = require 'pmdorand.config.base'
-local _set = require 'lib.pmdorand.set'
+local _set = require 'pmdorand.util.set'
 
 ---@class Config.Set : Config.Base
 --- Automatic type for tables used in config data.
