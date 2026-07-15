@@ -285,7 +285,7 @@ return {
     entered = function(menu)
         create_lines()
         ---@type int[]
-        local cursor_pos = cache.lines.at[(cache.cursor - 1) % (#cache.lines.at - 1) + 1]
+        local cursor_pos = cache.lines.at[(cache.cursor - 1) % #cache.lines.at + 1]
         set_cursor_pos(menu, cursor_pos[1], cursor_pos[2])
         return create_display_texts(menu)
     end,
