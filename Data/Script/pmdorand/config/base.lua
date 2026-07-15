@@ -32,7 +32,7 @@ function _conf:get_parent() return nil end
 
 return {
     extend = function(title)
-        local out = {__title = title}
+        local out = {__title = title, is_configuration = true}
 
         out.__tostring = _conf.__tostring
         function out:__index(key)

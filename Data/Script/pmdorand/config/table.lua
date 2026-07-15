@@ -51,9 +51,27 @@ function tbl:with_name(name)
     return setmetatable({name = name, content = self.content}, tbl)
 end
 
+---@param table Config.FromTable
+---@return Config.Table
+function tbl.from(table)
+    if (getmetatable(table) or {}).__title == tbl.__title then return table --[[@as Config.Table]] end
+    local out = {}
+    local mtt
+    for i,k in pairs(table) do
+        if type(k) ~= 'table' then error('Entries in a configuration table must either be a table or configuration value') end
+        mtt = getmetatable(k)
+        if mtt.is_configuration then
+            out[i] = k
+        else
+            out[i] = tbl.from(k --[[@as Config.FromTable]])
+        end
+    end
+    return setmetatable({content = out}, tbl)
+end
+
 ---@return Config.Table
 function tbl.new(content)
-    return setmetatable({content = content}, tbl)
+    return tbl.from(content)
 end
 
 return tbl.new
