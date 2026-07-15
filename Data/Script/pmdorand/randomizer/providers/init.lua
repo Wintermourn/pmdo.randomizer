@@ -6,5 +6,6 @@ return {
         require 'pmdorand.randomizer.providers.intrinsics'
         require 'pmdorand.randomizer.providers.zones'
         require 'pmdorand.randomizer.providers.tiles'
+        require 'pmdorand.randomizer.providers.universal'
     end
 }

@@ -10,6 +10,8 @@ ftr.content = {}
 ---@type string?
 ftr.name = nil
 
+local blank = {}
+
 local root_mt = {
     __nyamlKeyOrder = {'enabled', 'randomization_chance'}
 }
@@ -93,7 +95,7 @@ function ftr.from(default_enabled, default_rate, table)
     for i,k in pairs(table) do
         if type(k) ~= 'table' then error('Entries in a feature must either be a table or configuration value') end
         if out[i] ~= nil then error('Invalid key in feature: '.. tostring(i)) end
-        mtt = getmetatable(k)
+        mtt = getmetatable(k) or blank
         if mtt.is_configuration then
             out[i] = k --[[@as Config.Base]]
         else

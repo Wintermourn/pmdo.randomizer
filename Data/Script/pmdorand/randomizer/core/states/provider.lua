@@ -33,6 +33,22 @@ function provider_state:serialize_jsonpatch(type, key, data)
     )
 end
 
+function provider_state:serialize_universal()
+    local file_path = IO.Path.Combine(BASE_PATH, 'Universal.jsonpatch')
+    ---@diagnostic disable-next-line: param-type-mismatch
+    if not IO.Directory.Exists(file_path) then IO.Directory.CreateDirectory(IO.Path.GetDirectoryName(file_path)) end
+    RogueEssence.Data.Serializer.SerializeDataAsDiff(
+        file_path,
+        RogueEssence.PathMod.NoMod(
+            IO.Path.Combine(
+                RogueEssence.Data.DataManager.DATA_PATH,
+                'Universal.json'
+            )
+        ),
+        _DATA.UniversalEvent
+    )
+end
+
 local public = {}
 
 ---@return pmdorand.state.provider

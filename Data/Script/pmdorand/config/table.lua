@@ -7,6 +7,8 @@ tbl.content = {}
 ---@type string?
 tbl.name = nil
 
+local blank = {}
+
 function tbl:get_default_value()
     local v = {}
     for i,k in pairs(self.content) do
@@ -59,7 +61,7 @@ function tbl.from(table)
     local mtt
     for i,k in pairs(table) do
         if type(k) ~= 'table' then error('Entries in a configuration table must either be a table or configuration value') end
-        mtt = getmetatable(k)
+        mtt = getmetatable(k) or blank
         if mtt.is_configuration then
             out[i] = k
         else

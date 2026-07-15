@@ -90,6 +90,7 @@
   <data name="pmdorand/provider:intrinsics" xml:space="preserve"><value>Abilities</value></data>
   <data name="pmdorand/provider:zones" xml:space="preserve"><value>Dungeons</value></data>
   <data name="pmdorand/provider:tiles" xml:space="preserve"><value>Tiles</value></data>
+  <data name="pmdorand/provider:universal" xml:space="preserve"><value>Universal Data</value></data>
 
   <data name="pmdorand/component:monster.texts" xml:space="preserve"><value>Texts</value></data>
   <data name="pmdorand/component:monster.stats" xml:space="preserve"><value>Stats</value></data>
@@ -116,4 +117,9 @@
   <data name="pmdorand/component:zone.items" xml:space="preserve"><value>Items</value></data>
   <data name="pmdorand/component:zone.tiles" xml:space="preserve"><value>Tiles</value></data>
   <data name="pmdorand/component:zone.monsters" xml:space="preserve"><value>Inhabitants</value></data>
+
+  <data name="pmdorand/component:universal.type_matchups" xml:space="preserve"><value>Type Matchups</value></data>
+
+  <data name="pmdorand/settings:standard/enabled" xml:space="preserve"><value>Enabled</value></data>
+  <data name="pmdorand/settings:standard/randomization_chance" xml:space="preserve"><value>Randomization Chance</value></data>
 </root>

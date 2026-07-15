@@ -16,3 +16,8 @@ interlace.dependency_test()
         end)
     end)
     :test()
+
+-- test code
+local conf = require 'pmdorand.randomizer.cache.configurations'
+conf.construct_defaults()
+conf.save('test')

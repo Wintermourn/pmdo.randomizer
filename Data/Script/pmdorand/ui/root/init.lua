@@ -2,6 +2,7 @@ local graphics = require 'pmdorand.util.graphics'
 local create_text = require 'pmdorand.util.create_text'
 local header = require 'pmdorand.util.header'
 local generation_manager = require 'pmdorand.randomizer.core.manager'
+local text_pool = require 'pmdorand.util.text_pool'
 
 local input_type = RogueEssence.FrameInput.InputType
 
@@ -13,68 +14,18 @@ local function refresh_text(menu)
     menu.elements.frame.tab:SetText(strings.tab_count:format(menu.tabs[menu.state.current_tab].name:upper(), menu.state.current_tab, #menu.tabs))
 end
 
-local function handle_text_return(element, menu_width, menu_height)
-    element[1] = tostring(element[1])
-    if element[2] and element[2] < 0 then
-        element[2] = menu_width + element[2] - 20
-    end
-    if element[3] and element[3] < 0 then
-        element[3] = menu_height + element[3] - 48
-    end
-    return element
-end
-
-local function handle_tab_output(menu, outputs)
-    if outputs == nil then return end
-    if #outputs == 0 then
-        for i = 1, #menu.elements.text_pool do
-            menu.elements.text_pool[i]:SetText ''
-        end 
-        return
-    end
-    local new_elements = #outputs - #menu.elements.text_pool
-    local starting_new_element = #menu.elements.text_pool + 1
-    local element, output
-    local menu_bounds = menu.menu.Bounds
-    if new_elements > 0 then
-        local real_index
-        for i = 1, new_elements do
-            real_index = starting_new_element + i - 1
-            output = handle_text_return(outputs[real_index], menu_bounds.Width, menu_bounds.Height)
-            element = create_text(output[1], (output[2] or 8) + 12, (output[3] or 0) + 19, output[4] or RogueElements.DirH.Left, output[5] or RogueElements.DirV.Up)
-            menu.elements.text_pool[real_index] = element
-            menu.menu.Elements:Add(element)
-        end
-    else
-        for i = #outputs + 1, #menu.elements.text_pool do
-            menu.elements.text_pool[i]:SetText ''
-        end
-    end
-    local offset = new_elements > 0 and new_elements or 0
-    if #outputs - offset > 0 then
-        for i = 1, #outputs - offset do
-            output = handle_text_return(outputs[i], menu_bounds.Width, menu_bounds.Height)
-            element = menu.elements.text_pool[i]
-            element:SetText(output[1])
-            element.Loc = #output > 1 and RogueElements.Loc(output[2] and (output[2] + 12) or element.Loc.X, output[3] and (output[3] + 19) or element.Loc.Y) or element.Loc
-            element.AlignH = output[4] or RogueElements.DirH.Left
-            element.AlignV = output[5] or RogueElements.DirV.Up
-        end
-    end
-end
-
 local directions = {
     [RogueElements.Dir8.Left] = function(menu)
         menu.tabs[menu.state.current_tab].left(menu)
         menu.state.current_tab = (menu.state.current_tab - 2) % #menu.tabs + 1
-        handle_tab_output(menu, menu.tabs[menu.state.current_tab].entered(menu))
+        text_pool.update_text(menu.menu, menu.elements.text_pool, menu.tabs[menu.state.current_tab].entered(menu), 12, 19, 20, 48)
         _GAME:SE("Menu/Select")
         refresh_text(menu)
     end,
     [RogueElements.Dir8.Right] = function(menu)
         menu.tabs[menu.state.current_tab].left(menu)
         menu.state.current_tab = menu.state.current_tab % #menu.tabs + 1
-        handle_tab_output(menu, menu.tabs[menu.state.current_tab].entered(menu))
+        text_pool.update_text(menu.menu, menu.elements.text_pool, menu.tabs[menu.state.current_tab].entered(menu), 12, 19, 20, 48)
         _GAME:SE("Menu/Select")
         refresh_text(menu)
     end
@@ -133,7 +84,7 @@ local function controls_listener(menu, inputs)
         menu.state.input_debounce = 20
     end
 
-    handle_tab_output(menu, menu.tabs[menu.state.current_tab].input(menu, inputs))
+    text_pool.update_text(menu.menu, menu.elements.text_pool, menu.tabs[menu.state.current_tab].input(menu, inputs), 12, 19, 20, 48)
 end
 
 local public = {}
@@ -176,7 +127,7 @@ function public.create()
     out.menu.Elements:Add(out.elements.generation_status[2])
     out.menu.Elements:Add(out.elements.cursor)
 
-    handle_tab_output(out, out.tabs[out.state.current_tab].entered(out))
+    text_pool.update_text(out.menu, out.elements.text_pool, out.tabs[out.state.current_tab].entered(out), 12, 19, 20, 48)
 
     return out.menu
 end

@@ -2,6 +2,7 @@ local async = require 'lib.pmdorand.async'
 local play_sound = require 'pmdorand.util.play_sound'
 local configurations = require 'pmdorand.randomizer.cache.configurations'
 local generation_manager = require 'pmdorand.randomizer.core.manager'
+local configure = require 'pmdorand.ui.configure'
 local component_registry = require 'pmdorand.randomizer.core.registry' .get 'components'
 local provider_registry = require 'pmdorand.randomizer.core.registry' .get 'providers'
 local strings = {
@@ -217,6 +218,34 @@ local function prompt_enabledness(menu, type, id)
     return promise
 end
 
+local function promp_component(menu, id)
+    local promise = async.promise()
+    local actions = {}
+    actions[#actions + 1] = {'Set Enabledness', true, function()
+        prompt_enabledness(menu, 'component', id):on_resolved(function()
+            create_lines()
+            cache.pending_update = create_display_texts(menu)
+            _MENU:RemoveMenu()
+        end):on_rejected(function()
+            _MENU:RemoveMenu()
+        end)
+    end}
+    actions[#actions + 1] = {'Configure', true, function()
+        _MENU:RemoveMenu()
+        local component = component_registry:get(id)
+        configure.open(component, configurations.get(id))
+    end}
+    local function close()
+        promise:reject()
+        _MENU:RemoveMenu()
+    end
+    actions[#actions + 1] = {'Cancel', true, close}
+    require 'pmdorand.ui.choice' .open(
+        function() promise:reject() end,
+        table.unpack(actions)
+    )
+end
+
 local function jump_to_previous_provider(menu)
     if #cache.lines.at > 1 then cache.cursor = (cache.cursor - 2) % #cache.lines.at + 1 else cache.cursor = 1 end
     while cache.lines.at[cache.cursor].type ~= 'provider' do
@@ -267,10 +296,14 @@ local inputs = {
             _GAME:SE("Menu/Confirm")
             local at = cache.lines.at[cache.cursor]
             if at == nil then return end
-            prompt_enabledness(menu, at.type, at.id):on_resolved(function()
-                create_lines()
-                cache.pending_update = create_display_texts(menu)
-            end)
+            if at.type == 'component' then
+                promp_component(menu, at.id)
+            else
+                prompt_enabledness(menu, at.type, at.id):on_resolved(function()
+                    create_lines()
+                    cache.pending_update = create_display_texts(menu)
+                end)
+            end
         end,
         [input_type.LeaderSwap1] = jump_to_previous_provider,
         [input_type.LeaderSwap2] = jump_to_next_provider,
