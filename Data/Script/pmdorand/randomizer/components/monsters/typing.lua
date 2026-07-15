@@ -5,6 +5,7 @@ local math_util = require 'pmdorand.util.math'
 component.builder()
     :with_id 'monster.typing'
     :associate_random 'monster.typing'
+    :default_enabledness ( false )
     :using_provider 'monsters'
     :with_dependencies()
     :with_settings {}

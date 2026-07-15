@@ -7,7 +7,7 @@ local component = {
     provider_id = '',
     ---@type string?
     associated_generator = nil,
-    ---@type Config.FromTable?
+    ---@type Config.Feature?
     settings = nil,
     ---@type pmdorand.component.dependency[]
     dependencies = {}

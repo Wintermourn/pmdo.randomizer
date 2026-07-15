@@ -5,6 +5,7 @@ local math_util = require 'pmdorand.util.math'
 component.builder()
     :with_id 'monster.intrinsics'
     :associate_random 'monster.intrinsics'
+    :default_enabledness ( false )
     :using_provider 'monsters'
     :with_dependencies()
     :with_settings {}

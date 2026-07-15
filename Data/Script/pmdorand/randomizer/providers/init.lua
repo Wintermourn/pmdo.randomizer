@@ -4,5 +4,7 @@ return {
         require 'pmdorand.randomizer.providers.items'
         require 'pmdorand.randomizer.providers.skills'
         require 'pmdorand.randomizer.providers.intrinsics'
+        require 'pmdorand.randomizer.providers.zones'
+        require 'pmdorand.randomizer.providers.tiles'
     end
 }

@@ -88,6 +88,8 @@
   <data name="pmdorand/provider:items" xml:space="preserve"><value>Items</value></data>
   <data name="pmdorand/provider:skills" xml:space="preserve"><value>Moves</value></data>
   <data name="pmdorand/provider:intrinsics" xml:space="preserve"><value>Abilities</value></data>
+  <data name="pmdorand/provider:zones" xml:space="preserve"><value>Dungeons</value></data>
+  <data name="pmdorand/provider:tiles" xml:space="preserve"><value>Tiles</value></data>
 
   <data name="pmdorand/component:monster.texts" xml:space="preserve"><value>Texts</value></data>
   <data name="pmdorand/component:monster.stats" xml:space="preserve"><value>Stats</value></data>
@@ -108,4 +110,10 @@
 
   <data name="pmdorand/component:intrinsic.texts" xml:space="preserve"><value>Texts</value></data>
   <data name="pmdorand/component:intrinsic.effects" xml:space="preserve"><value>Effects</value></data>
+
+  <data name="pmdorand/component:tile.traps" xml:space="preserve"><value>Traps</value></data>
+
+  <data name="pmdorand/component:zone.items" xml:space="preserve"><value>Items</value></data>
+  <data name="pmdorand/component:zone.tiles" xml:space="preserve"><value>Tiles</value></data>
+  <data name="pmdorand/component:zone.monsters" xml:space="preserve"><value>Inhabitants</value></data>
 </root>

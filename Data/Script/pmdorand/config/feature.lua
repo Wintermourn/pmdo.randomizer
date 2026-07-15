@@ -100,7 +100,8 @@ function ftr.from(default_enabled, default_rate, table)
             out[i] = config.table(k --[[@as Config.FromTable]])
         end
     end
-    return setmetatable({enabled = config.boolean(default_enabled or true):allow_boolable(true), randomization_chance = config.percentage(default_rate or 1.00, 0.01), content = out}, ftr)
+    if default_enabled == nil then default_enabled = true end
+    return setmetatable({enabled = config.boolean(default_enabled):allow_boolable(true), randomization_chance = config.percentage(default_rate or 1.00, 0.01), content = out}, ftr)
 end
 
 ---@return Config.Feature

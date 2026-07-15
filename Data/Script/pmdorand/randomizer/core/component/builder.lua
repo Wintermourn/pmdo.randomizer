@@ -1,3 +1,5 @@
+local config = require 'pmdorand.config'
+
 ---@class pmdorand.component.builder
 local builder = { data = {} }
 builder.__index = builder
@@ -5,6 +7,13 @@ builder.__index = builder
 ---Sets the identifier of the output component.
 function builder:with_id( identifier )
     self.data.id = identifier
+    return self
+end
+
+---Controls whether the component defaults to being randomized, or not, or having a chance to be.
+---@param enabledness boolean|number
+function builder:default_enabledness( enabledness )
+    self.data.enabledness = enabledness
     return self
 end
 
@@ -157,7 +166,7 @@ function builder:build()
         id = self.data.id,
         provider_id = self.data.provider_id,
         associated_generator = self.data.associated_generator,
-        settings = self.data.settings,
+        settings = self.data.settings and config.feature(self.data.settings, self.data.enabledness == nil and true or self.data.enabledness),
         step_fn = self.data.step_fn,
         dependencies = self.data.dependencies or {}
     }, provider)

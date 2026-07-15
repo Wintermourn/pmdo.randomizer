@@ -55,11 +55,10 @@ end
 
 local public = {}
 
----@param structure Config.FromTable
+---@param structure Config.Feature
 function public.publish( component_id, structure )
-    local wrapped =config.feature( structure )
-    cache.structures.components[component_id] = wrapped
-    cache.components[component_id] = wrapped:get_default_value()
+    cache.structures.components[component_id] = structure
+    cache.components[component_id] = structure:get_default_value()
 end
 
 function public.construct_defaults()
