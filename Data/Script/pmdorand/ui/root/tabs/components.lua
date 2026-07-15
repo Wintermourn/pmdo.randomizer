@@ -120,7 +120,8 @@ end
 
 local function create_display_texts(menu)
     local max_height = cache.current_scroll + (menu.menu.Bounds.Height - 50)
-    local output, finished = {}, false
+    local hidden_top, hidden_bottom = cache.lines.at[1][2] < cache.current_scroll, true
+    local output = {}
     local height, lines, line
     for i = 1, #cache.lines.texts do
         lines = cache.lines.texts[i] --[[@as table[] ]]
@@ -133,10 +134,14 @@ local function create_display_texts(menu)
             end
         end
     end
-    finished = true
+    hidden_bottom = false
     ::skip_remaining_lines__entered::
 
-    if not finished then
+    if hidden_top then
+        output[#output + 1] = {'...', math.floor((menu.menu.Bounds.Width - 24) / 2), 6, RogueElements.DirH.None, RogueElements.DirV.Down} 
+    end
+
+    if hidden_bottom then
         output[#output + 1] = {'...', math.floor((menu.menu.Bounds.Width - 24) / 2), -2, RogueElements.DirH.None} 
     end
 

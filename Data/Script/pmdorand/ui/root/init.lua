@@ -57,8 +57,8 @@ local function handle_tab_output(menu, outputs)
             element = menu.elements.text_pool[i]
             element:SetText(output[1])
             element.Loc = #output > 1 and RogueElements.Loc(output[2] and (output[2] + 12) or element.Loc.X, output[3] and (output[3] + 19) or element.Loc.Y) or element.Loc
-            element.AlignH = output[4] or element.AlignH
-            element.AlignV = output[5] or element.AlignV
+            element.AlignH = output[4] or RogueElements.DirH.Left
+            element.AlignV = output[5] or RogueElements.DirV.Up
         end
     end
 end
