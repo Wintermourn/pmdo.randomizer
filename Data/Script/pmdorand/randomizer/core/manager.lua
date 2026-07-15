@@ -51,6 +51,26 @@ function public.get_state()
     return 2
 end
 
+function public.get_enabled_count()
+    local min, max = 0, 0
+    for component_id in configuration.keys() do
+        config = configuration.get( component_id )
+        if config.enabled == true then
+            min = min + 1
+            max = max + 1
+        elseif type(config.enabled) == 'number' and config.enabled > 0 then
+            if config.enabled >= 1 then
+                min = min + 1
+                max = max + 1
+            else
+                max = max + 1 
+            end
+        end
+    end
+    
+    return min, max
+end
+
 function public.start()
     if manager.is_generating then return false end
     random_cache.construct_all()

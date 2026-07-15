@@ -59,4 +59,49 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="pmdorand:topmenu" xml:space="preserve"><value>Randomizer</value></data>
+
+  <data name="pmdorand:randomize" xml:space="preserve"><value>Generate</value></data>
+  <data name="pmdorand:configurations.browse" xml:space="preserve"><value>Browse Configurations</value></data>
+
+  <data name="pmdorand:enabled" xml:space="preserve"><value>[color=#90baff]Enabled</value></data>
+  <data name="pmdorand:disabled" xml:space="preserve"><value>[color=#ff9090]Disabled</value></data>
+  <data name="pmdorand:first" xml:space="preserve"><value>[color=#ffbb90]First</value></data>
+  <data name="pmdorand:second" xml:space="preserve"><value>[color=#ffbb90]Second</value></data>
+
+  <data name="pmdorand:tab.number" xml:space="preserve"><value>%s [color=#999999](%d/%d)</value></data>
+  <data name="pmdorand:tab.status" xml:space="preserve"><value>Overview</value></data>
+  <data name="pmdorand:tab.settings" xml:space="preserve"><value>Settings</value></data>
+  <data name="pmdorand:tab.components" xml:space="preserve"><value>Components</value></data>
+
+  <data name="pmdorand:stats.components.title" xml:space="preserve"><value>Components</value></data>
+  <data name="pmdorand:stats.components.count" xml:space="preserve"><value>%d [color=#999999](%d Enabled)</value></data>
+  <data name="pmdorand:stats.components.span" xml:space="preserve"><value>%d [color=#999999](%d-%d Enabled)</value></data>
+  <data name="pmdorand:stats.providers.count" xml:space="preserve"><value>%d Providers</value></data>
+  <data name="pmdorand:stats.enabled.count" xml:space="preserve"><value>%d Enabled</value></data>
+  <data name="pmdorand:stats.enabled.count.span" xml:space="preserve"><value>%d-%d Enabled</value></data>
+
+  <data name="pmdorand/provider:monsters" xml:space="preserve"><value>Pokémon</value></data>
+  <data name="pmdorand/provider:items" xml:space="preserve"><value>Items</value></data>
+  <data name="pmdorand/provider:skills" xml:space="preserve"><value>Moves</value></data>
+  <data name="pmdorand/provider:intrinsics" xml:space="preserve"><value>Abilities</value></data>
+
+  <data name="pmdorand/component:monster.texts" xml:space="preserve"><value>Texts</value></data>
+  <data name="pmdorand/component:monster.stats" xml:space="preserve"><value>Stats</value></data>
+  <data name="pmdorand/component:monster.typing" xml:space="preserve"><value>Typings</value></data>
+  <data name="pmdorand/component:monster.skills" xml:space="preserve"><value>Moves</value></data>
+  <data name="pmdorand/component:monster.promotions" xml:space="preserve"><value>Evolutions</value></data>
+  <data name="pmdorand/component:monster.intrinsics" xml:space="preserve"><value>Abilities</value></data>
+
+  <data name="pmdorand/component:skill.texts" xml:space="preserve"><value>Texts</value></data>
+  <data name="pmdorand/component:skill.typing" xml:space="preserve"><value>Typings</value></data>
+  <data name="pmdorand/component:skill.stats" xml:space="preserve"><value>Stats</value></data>
+  <data name="pmdorand/component:skill.effects" xml:space="preserve"><value>Effects</value></data>
+
+  <data name="pmdorand/component:item.texts" xml:space="preserve"><value>Texts</value></data>
+  <data name="pmdorand/component:item.sprites" xml:space="preserve"><value>Sprites</value></data>
+  <data name="pmdorand/component:item.stats" xml:space="preserve"><value>Stats</value></data>
+  <data name="pmdorand/component:item.effects" xml:space="preserve"><value>Effects</value></data>
+
+  <data name="pmdorand/component:intrinsic.texts" xml:space="preserve"><value>Texts</value></data>
+  <data name="pmdorand/component:intrinsic.effects" xml:space="preserve"><value>Effects</value></data>
 </root>

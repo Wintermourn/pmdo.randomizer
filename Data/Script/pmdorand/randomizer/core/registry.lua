@@ -1,11 +1,17 @@
 local registries = {}
 
+---@class pmdorand.registry.content<T>
+---@field by_key {[string]: T}
+---@field by_value {[T]: string}
+
 ---@class pmdorand.registry<T>
+---@field content pmdorand.registry.content<T>
 ---@field register fun(self, ...: T): boolean
 ---@field get fun(self, key: string): T
 ---@field contains fun(self, obj: T): boolean
 ---@field contains_key fun(self, key: string): boolean
 local registry = {
+    count = 0,
     content = {
         by_key = {},
         by_value = {}
@@ -38,6 +44,9 @@ function registry:register(...)
 
         if self.filter(entry) then
             local id = self.indexer(entry)
+            if self.content.by_key[id] == nil then
+                self.count = self.count + 1 
+            end
             self.content.by_key[id] = entry
             self.content.by_value[entry] = id
         else
