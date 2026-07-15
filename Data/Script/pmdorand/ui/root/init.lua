@@ -26,7 +26,6 @@ end
 
 local function handle_tab_output(menu, outputs)
     if outputs == nil then return end
-    print(#outputs)
     if #outputs == 0 then
         for i = 1, #menu.elements.text_pool do
             menu.elements.text_pool[i]:SetText ''
@@ -37,7 +36,6 @@ local function handle_tab_output(menu, outputs)
     local starting_new_element = #menu.elements.text_pool + 1
     local element, output
     local menu_bounds = menu.menu.Bounds
-    print 'at new elements'
     if new_elements > 0 then
         local real_index
         for i = 1, new_elements do
@@ -52,7 +50,6 @@ local function handle_tab_output(menu, outputs)
             menu.elements.text_pool[i]:SetText ''
         end
     end
-    print 'at remaining elements'
     local offset = new_elements > 0 and new_elements or 0
     if #outputs - offset > 0 then
         for i = 1, #outputs - offset do
@@ -64,7 +61,6 @@ local function handle_tab_output(menu, outputs)
             element.AlignV = output[5] or element.AlignV
         end
     end
-    print 'tail'
 end
 
 local directions = {

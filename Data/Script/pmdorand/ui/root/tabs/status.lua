@@ -49,7 +49,8 @@ local texts = {
 
 local last_state
 local function update_texts()
-    if generation_manager.get_state() == 1 then
+    local enabled_min, enabled_max = generation_manager.get_enabled_count()
+    if generation_manager.get_state() == 1 or enabled_max == 0 then
         texts[5][1] = '[color=#999999]'.. strings.start_randomizer
     else
         texts[5][1] = strings.start_randomizer 

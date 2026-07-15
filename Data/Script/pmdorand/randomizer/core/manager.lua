@@ -51,6 +51,8 @@ function public.get_state()
     return 2
 end
 
+---@return int
+---@return int
 function public.get_enabled_count()
     local min, max = 0, 0
     for component_id in configuration.keys() do

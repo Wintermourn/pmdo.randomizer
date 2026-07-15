@@ -65,6 +65,7 @@
 
   <data name="pmdorand:enabled" xml:space="preserve"><value>[color=#90baff]Enabled</value></data>
   <data name="pmdorand:disabled" xml:space="preserve"><value>[color=#ff9090]Disabled</value></data>
+  <data name="pmdorand:dynamic" xml:space="preserve"><value>[color=#ffbb90]Dynamic</value></data>
   <data name="pmdorand:first" xml:space="preserve"><value>[color=#ffbb90]First</value></data>
   <data name="pmdorand:second" xml:space="preserve"><value>[color=#ffbb90]Second</value></data>
 
