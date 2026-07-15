@@ -1,3 +1,4 @@
+local async = require 'lib.pmdorand.async'
 local play_sound = require 'pmdorand.util.play_sound'
 local configurations = require 'pmdorand.randomizer.cache.configurations'
 local generation_manager = require 'pmdorand.randomizer.core.manager'
@@ -19,7 +20,9 @@ local cache = {
     lines = {
         texts = {},
         at = {}
-    }
+    },
+    components = {},
+    pending_update = nil
 }
 
 local function create_lines()
@@ -53,6 +56,8 @@ local function create_lines()
             end
         end
     end
+    cache.components = components
+
     table.sort(providers, function(a, b)
         return STRINGS:FormatKey('pmdorand/provider:'.. a) < STRINGS:FormatKey('pmdorand/provider:'.. b)
     end)
@@ -88,7 +93,7 @@ local function create_lines()
             elseif enabledness == false then
                 dynamic_text = STRINGS:FormatKey 'pmdorand:disabled'
             else
-                dynamic_text = STRINGS:FormatKey 'pmdorand:dynamic'
+                dynamic_text = STRINGS:FormatKey 'pmdorand:dynamic' .. ('[color] (%02d%%)'):format(math.floor(enabledness * 100 + 0.5))
             end
 
             texts[#texts + 1] = {
@@ -148,6 +153,94 @@ local function create_display_texts(menu)
     return output
 end
 
+local function prompt_enabledness(menu, type, id)
+    local promise = async.promise()
+    ---@type table
+    local actions
+    if type == 'provider' then
+        actions = {
+            {STRINGS:FormatKey 'pmdorand:set_all_to' .. STRINGS:FormatKey 'pmdorand:enabled', true, function()
+                for _, component_id in ipairs(cache.components[id]) do
+                    configurations.get(component_id).enabled = true
+                end
+                promise:resolve()
+                _MENU:RemoveMenu()
+            end},
+            {STRINGS:FormatKey 'pmdorand:set_all_to' .. STRINGS:FormatKey 'pmdorand:dynamic', true, function()
+                for _, component_id in ipairs(cache.components[id]) do
+                    configurations.get(component_id).enabled = math.random()
+                end
+                promise:resolve()
+                _MENU:RemoveMenu()
+            end},
+            {STRINGS:FormatKey 'pmdorand:set_all_to' .. STRINGS:FormatKey 'pmdorand:disabled', true, function()
+                for _, component_id in ipairs(cache.components[id]) do
+                    configurations.get(component_id).enabled = false
+                end
+                promise:resolve()
+                _MENU:RemoveMenu()
+            end}
+        }
+    elseif type == 'component' then
+        local is_enabled = configurations.get(id).enabled
+
+        actions = {}
+        if is_enabled ~= true then
+            actions[#actions+1] = {STRINGS:FormatKey 'pmdorand:set_to' .. STRINGS:FormatKey 'pmdorand:enabled', true, function()
+                configurations.get(id).enabled = true
+                promise:resolve()
+                _MENU:RemoveMenu()
+            end}
+        end
+        if is_enabled ~= false then
+            actions[#actions+1] = {STRINGS:FormatKey 'pmdorand:set_to' .. STRINGS:FormatKey 'pmdorand:disabled', true, function()
+                configurations.get(id).enabled = false
+                promise:resolve()
+                _MENU:RemoveMenu()
+            end}
+        end
+        actions[#actions+1] = {STRINGS:FormatKey 'pmdorand:set_to' .. STRINGS:FormatKey 'pmdorand:dynamic', true, function()
+            configurations.get(id).enabled = math.random()
+            promise:resolve()
+            _MENU:RemoveMenu()
+        end}
+    end
+    local function close()
+        promise:reject()
+        _MENU:RemoveMenu()
+    end
+    actions[#actions + 1] = {'Cancel', true, close}
+    require 'pmdorand.ui.choice' .open(
+        function() promise:reject() end,
+        table.unpack(actions)
+    )
+    return promise
+end
+
+local function jump_to_previous_provider(menu)
+    if #cache.lines.at > 1 then cache.cursor = (cache.cursor - 2) % #cache.lines.at + 1 else cache.cursor = 1 end
+    while cache.lines.at[cache.cursor].type ~= 'provider' do
+        if #cache.lines.at > 1 then cache.cursor = (cache.cursor - 2) % #cache.lines.at + 1 else cache.cursor = 1; break end
+    end
+    ---@type int[]
+    local cursor_pos = cache.lines.at[(cache.cursor - 1) % #cache.lines.at + 1]
+    set_cursor_pos(menu, cursor_pos[1], cursor_pos[2])
+    _GAME:SE 'Menu/Skip'
+    return create_display_texts(menu)
+end
+
+local function jump_to_next_provider(menu)
+    if #cache.lines.at > 1 then cache.cursor = cache.cursor % #cache.lines.at + 1 else cache.cursor = 1 end
+    while cache.lines.at[cache.cursor].type ~= 'provider' do
+        if #cache.lines.at > 1 then cache.cursor = cache.cursor % #cache.lines.at + 1 else cache.cursor = 1; break end
+    end
+    ---@type int[]
+    local cursor_pos = cache.lines.at[(cache.cursor - 1) % #cache.lines.at + 1]
+    set_cursor_pos(menu, cursor_pos[1], cursor_pos[2])
+    _GAME:SE 'Menu/Skip'
+    return create_display_texts(menu)
+end
+
 local last_dir
 local sound_volume = 1.00
 local inputs = {
@@ -170,9 +263,19 @@ local inputs = {
         end
     },
     bindings = {
-        [input_type.Confirm] = function(_m, _i)
+        [input_type.Confirm] = function(menu, _i)
             _GAME:SE("Menu/Confirm")
-        end
+            local at = cache.lines.at[cache.cursor]
+            if at == nil then return end
+            prompt_enabledness(menu, at.type, at.id):on_resolved(function()
+                create_lines()
+                cache.pending_update = create_display_texts(menu)
+            end)
+        end,
+        [input_type.LeaderSwap1] = jump_to_previous_provider,
+        [input_type.LeaderSwap2] = jump_to_next_provider,
+        [input_type.LeaderSwapBack] = jump_to_previous_provider,
+        [input_type.LeaderSwapForth] = jump_to_next_provider
     }
 }
 
@@ -194,6 +297,7 @@ return {
     input = function(menu, input)
         for i, k in pairs(inputs.bindings) do
             if input:JustPressed(i) then
+                menu.elements.cursor:ResetTimeOffset()
                 return k(menu, input)
             end
         end
@@ -209,6 +313,13 @@ return {
             menu.state.input_debounce = input.Direction == last_dir and 6 or 18
         end
         last_dir = input.Direction
-        return pending
+
+        if pending then
+            return pending
+        elseif cache.pending_update then
+            local out = cache.pending_update
+            cache.pending_update = nil
+            return out
+        end
     end
 }

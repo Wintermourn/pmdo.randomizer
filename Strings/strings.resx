@@ -63,6 +63,9 @@
   <data name="pmdorand:randomize" xml:space="preserve"><value>Generate</value></data>
   <data name="pmdorand:configurations.browse" xml:space="preserve"><value>Browse Configurations</value></data>
 
+  <data name="pmdorand:set_to" xml:space="preserve"><value>Set to </value></data>
+  <data name="pmdorand:set_all_to" xml:space="preserve"><value>Set all to </value></data>
+  <data name="pmdorand:set_enabledness" xml:space="preserve"><value>Set Enabledness</value></data>
   <data name="pmdorand:enabled" xml:space="preserve"><value>[color=#90baff]Enabled</value></data>
   <data name="pmdorand:disabled" xml:space="preserve"><value>[color=#ff9090]Disabled</value></data>
   <data name="pmdorand:dynamic" xml:space="preserve"><value>[color=#ffbb90]Dynamic</value></data>

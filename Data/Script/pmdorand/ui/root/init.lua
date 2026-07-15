@@ -159,7 +159,7 @@ function public.create()
     last_state = -1
 
     local ww, wh = graphics.get_screen_dimensions()
-    local mw, mh = math.floor(ww * 0.7), math.floor(wh * 0.7)
+    local mw, mh = math.floor(ww * 0.7), wh - 16--math.floor(wh * 0.7)
     out.menu = RogueEssence.Menu.ScriptableMenu(8, 8, mw, mh, function(i) controls_listener(out, i) end)
 
     out.elements.cursor = RogueEssence.Menu.MenuCursor(out.menu)
