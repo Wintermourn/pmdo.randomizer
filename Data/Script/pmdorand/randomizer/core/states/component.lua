@@ -17,7 +17,12 @@ end
 ---@param self pmdorand.state.component
 ---@return table
 function component_state.get_config( self, identifier )
-    return require 'pmdorand.randomizer.cache.configurations' .get( identifier or (self and self.identifier) ) --[[@as table]]
+    return require 'pmdorand.randomizer.cache.configurations' .get( identifier or (self and self.identifier) ).options --[[@as table]]
+end
+
+function component_state.get_randomization_chance( self, identifier )
+    if identifier == nil and self == nil then return 1.00 end
+    return require 'pmdorand.randomizer.cache.configurations' .get( identifier or self.identifier ).randomization_chance --[[@as number]]
 end
 
 ---@return pmdorand.random

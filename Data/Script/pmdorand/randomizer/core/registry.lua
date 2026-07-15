@@ -77,6 +77,7 @@ end
 ---@param name string
 ---@return pmdorand.registry<any>
 ---@overload fun(name: 'providers'): pmdorand.registry<pmdorand.provider<any>>
+---@overload fun(name: 'components'): pmdorand.registry<pmdorand.component>
 function public.get(name)
     return registries[name]
 end
