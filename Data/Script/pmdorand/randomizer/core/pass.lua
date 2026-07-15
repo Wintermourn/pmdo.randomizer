@@ -3,6 +3,7 @@
 local dependency_condition = require 'pmdorand.randomizer.core.component' .enums.dependency_conditions
 local providers = require 'pmdorand.randomizer.core.registry' .get 'providers'
 local state_cache = require 'pmdorand.randomizer.cache.states'
+local random_cache = require 'pmdorand.randomizer.cache.random'
 local async = require 'lib.pmdorand.async'
 
 local __Environment = luanet.import_type 'System.Environment'
@@ -51,10 +52,15 @@ pass.__index = pass
 ---@param manager pmdorand.pass.manager
 function pass:run(manager)
     local component_states = {}
+    ---@type {[string]: number}
+    local iteration_chance = {}
     for _, component in ipairs(self.components) do
-        component_states[component.id] = state_cache.component(component.id)
+        local state = state_cache.component(component.id)
+        component_states[component.id] = state
+        iteration_chance[component.id] = state:get_randomization_chance()
     end
 
+    local random = random_cache.get_generator()
     local provider = self.provider
     local provider_state = state_cache.provider(provider.id)
     local next_yield = __Environment.TickCount64 + 100
@@ -63,11 +69,16 @@ function pass:run(manager)
     local digits = #tostring(key_count)
     local pass_template = table.concat({"Pass %d [%s]: %", digits, 'd/%', digits, 'd'})
     local n = 0
+    ---@type number
+    local ichance
     for identifier in provider.methods.iterate_keys(provider_state) do
         n=n+1
         local data = get_method(provider, identifier, provider_state)
         for _, component in ipairs(self.components) do
-            component.step_fn(identifier --[[@as string]], data, component_states[component.id])
+            ichance = iteration_chance[component.id]
+            if ichance >= 1 or random:bool(ichance) then
+                component.step_fn(identifier --[[@as string]], data, component_states[component.id])
+            end
         end
         if false == true then
             provider.methods.flush(identifier --[[@as string]], data, provider_state) 

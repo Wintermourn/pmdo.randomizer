@@ -75,6 +75,7 @@ function _promise:resolve(...)
     if self.finished then return end
     self.finished = true
     self.resolved = true
+    self.return_values = {...}
     for i,k in ipairs(self.subscribers.on_resolved) do
         k(...)
     end
@@ -84,6 +85,7 @@ function _promise:reject(...)
     if self.finished then return end
     self.finished = true
     self.resolved = false
+    self.return_values = {...}
     for i,k in ipairs(self.subscribers.on_rejected) do
         k(...)
     end
@@ -91,6 +93,7 @@ end
 
 ---@param fn async fun(...)
 function _promise:on_resolved(fn)
+    if self.finished and self.resolved then fn(unpack(self.return_values)) end
     local on_res = self.subscribers.on_resolved
     on_res[#on_res + 1] = fn
     return self
@@ -98,6 +101,7 @@ end
 
 ---@param fn async fun(...)
 function _promise:on_rejected(fn)
+    if self.finished and not self.resolved then fn(unpack(self.return_values)) end
     local on_res = self.subscribers.on_rejected
     on_res[#on_res + 1] = fn
     return self

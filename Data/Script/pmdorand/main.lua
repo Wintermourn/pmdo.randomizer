@@ -12,7 +12,7 @@ interlace.dependency_test()
 
         -- very temporary menu
         require 'mentoolkit' .add_to_menu("top_menu", '[$pmdorand:topmenu]', function ()
-            require 'pmdorand.temp_run'()
+            require 'pmdorand.ui' .show() --require 'pmdorand.temp_run'()
         end)
     end)
     :test()

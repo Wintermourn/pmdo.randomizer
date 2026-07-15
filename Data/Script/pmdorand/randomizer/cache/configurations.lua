@@ -1,6 +1,6 @@
 local config = require 'pmdorand.config'
 local interlace = require 'lib.pmdorand.interlace'
-local header = interlace .get_active_mod_by_uuid '019f4afe-e16e-734e-aebb-05e908454357'
+local header = require 'pmdorand.util.header'
 local nyaml = require 'lib.pmdorand.nyaml'
 nyaml(header.Path, 'Libraries', 'SharpYaml.dll')
 
@@ -69,6 +69,17 @@ function public.construct_defaults()
         cache.components[i] = k:get_default_value()
     end
     return { core = cache.core, components = cache.components }
+end
+
+---@return fun(): string
+function public.keys()
+    local keys = {}
+    for i in pairs(cache.components) do keys[#keys + 1] = i end
+    local i = 0
+    return function()
+        i = i + 1
+        return keys[i]
+    end
 end
 
 function public.get( identifier )

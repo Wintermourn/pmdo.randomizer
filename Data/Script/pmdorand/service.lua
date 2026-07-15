@@ -27,7 +27,7 @@ service.Subscribe = function(_, med)
                 "RANDOMIZER",
                 "Randomize (temp)",
                 function()
-                    require 'pmdorand.temp_run'()
+                    require 'pmdorand.ui' .show()
                 end
             ))
         end

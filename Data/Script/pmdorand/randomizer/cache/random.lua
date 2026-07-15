@@ -59,6 +59,7 @@ function public.construct_all()
     end
 end
 
+---@return pmdorand.random
 function public.get_generator( identifier )
     return cache.generators[identifier] or cache.fallback_generator
 end

@@ -7,7 +7,6 @@ local function randomize_stat(random, current_value, conf)
     if conf.range.mode == 'r' then
         min = math.max(conf.minimum, current_value - conf.range.value)
         max = math.min(conf.maximum, current_value + conf.range.value)
-        print(min, max, current_value, conf.originalPull)
         return math_util.round(random:origin_weighted(min, max, current_value, conf.originalPull))
     elseif conf.range.mode == 'e' then
         local percent = conf.range.value / 100
