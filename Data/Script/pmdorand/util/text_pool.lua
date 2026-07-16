@@ -34,7 +34,7 @@ return {
             for i = 1, new_elements do
                 real_index = starting_new_element + i - 1
                 output = handle_aligned_coordinates(new_text[real_index], menu_bounds.Width, menu_bounds.Height, right, bottom)
-                element = create_text(output[1], (output[2] or 8) + 12, (output[3] or 0) + 19, output[4] or RogueElements.DirH.Left, output[5] or RogueElements.DirV.Up)
+                element = create_text(output[1], (output[2] or 8) + left, (output[3] or 0) + top, output[4] or RogueElements.DirH.Left, output[5] or RogueElements.DirV.Up)
                 pool[real_index] = element
                 menu.Elements:Add(element)
             end

@@ -14,10 +14,10 @@ provider.builder()
                 return 'Universal'
             end
         end)
-        :get(function(key, _state)
+        :get(function(_key, _state)
             return _DATA.UniversalEvent
         end)
-        :flush(function(key, data, state)
+        :flush(function(_key, _data, state)
             state:serialize_universal()
         end)
     :register()

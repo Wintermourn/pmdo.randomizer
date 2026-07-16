@@ -4,7 +4,7 @@
 ---@field any fun(default: Config.Base, ...: Config.Base): Config.Any
 ---@field boolean fun(default: boolean|number?): Config.Boolean
 ---@field dynamic_int fun(default: integer?, minimum: integer?, maximum: integer?): Config.DynamicInteger
----@field feature fun(entries: Config.FromTable, enabled: boolean|number?, randomization_chance: number?): Config.Feature
+---@field feature fun(entries: Config.FromTable, enabled: boolean|number?, randomization_chance: number?, sorted_keys: string[]?): Config.Feature
 ---@field float fun(default: number?, minimum: number?, maximum: number?, step_size: number?): Config.Floating
 ---@field integer fun(default: integer?, minimum: integer?, maximum: integer?): Config.Integer
 ---@field matchup_table fun(keying_function: (fun(key: string): boolean)?): Config.MatchupTable

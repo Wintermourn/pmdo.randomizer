@@ -24,7 +24,7 @@ function bool:stringify()
 end
 
 --- Enable to allow numbers as a valid value. Can be used to set a chance of true or false.
-function bool:allow_boolable(enable)
+function bool:permit_boolable(enable)
     self.allow_boolable = enable
     return self
 end

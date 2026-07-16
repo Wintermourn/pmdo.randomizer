@@ -6,7 +6,7 @@ local modes = {
 }
 
 ---@class Config.Stat : Config.Base
-local stat = base.extend("Config.Monster.Stat")
+local stat = base.extend("Config.Stat")
 stat.config = {
     minimum = 0, maximum = 255, range = {
         mode = modes.raw,
@@ -38,10 +38,11 @@ function stat:validate(v, enforce)
     return true
 end
 
-function stat:stringify()
-    return ("[%d, %d] (%s%d, %.2f)"):format(
+function stat:stringify(colorize)
+    return ("[%d, %d] %s(%s%d, %.2f)"):format(
         self.config.minimum,
         self.config.maximum,
+        colorize and '[color=#777777]' or '',
         self.config.range.mode,
         self.config.range.value,
         self.config.originalPull

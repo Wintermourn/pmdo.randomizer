@@ -44,6 +44,14 @@ function builder:with_settings(tbl)
     return self
 end
 
+---Organizes keys in the settings table to appear in the order specified, and alphabetically otherwise.
+---@see pmdorand.component.builder.with_settings
+---@param tbl string[]
+function builder:sorted_keys(tbl)
+    self.data.sorted_settings = tbl
+    return self
+end
+
 do
     local disowner = require 'lib.pmdorand.disown'
 
@@ -162,11 +170,18 @@ function builder:build()
         error(("component requires %s before building"):format(reqs))
     end
 
+    local settings
+    if self.data.settings then
+        settings = config.feature(self.data.settings, self.data.enabledness == nil and true or self.data.enabledness, nil)
+        if self.data.sorted_settings then
+            settings = settings:with_sorted_keys(self.data.sorted_settings)
+        end
+    end
     return setmetatable({
         id = self.data.id,
         provider_id = self.data.provider_id,
         associated_generator = self.data.associated_generator,
-        settings = self.data.settings and config.feature(self.data.settings, self.data.enabledness == nil and true or self.data.enabledness),
+        settings = settings,
         step_fn = self.data.step_fn,
         dependencies = self.data.dependencies or {}
     }, provider)

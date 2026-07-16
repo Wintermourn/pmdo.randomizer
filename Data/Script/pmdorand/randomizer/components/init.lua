@@ -14,7 +14,7 @@ return {
             req_path = file:sub(#this_dir + 1, -5):gsub('/', '.')
             if req_path:sub(-5) == '.init' then req_path = req_path:sub(1, -6) end
             if req_path ~= '' then
-                print(" -\t".. req_path:sub(2))
+                --print(" -\t".. req_path:sub(2))
                 require(require_path .. req_path)
             end
         end

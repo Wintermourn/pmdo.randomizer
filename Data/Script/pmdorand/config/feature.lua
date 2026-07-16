@@ -1,9 +1,12 @@
+local config = require 'pmdorand.config'
 local base = require 'pmdorand.config.base'
 
 ---@class Config.Feature : Config.Base
 --- Table extension with enabled and randomization chance fields.
 ---@field enabled Config.Boolean
 ---@field randomization_chance Config.Percentage
+---@field sorted_keys {[string]: integer}?
+---@field ordered_keys string[]
 local ftr = base.extend("Config.Feature")
 ---@type {[string|number]: Config.Base}
 ftr.content = {}
@@ -24,6 +27,31 @@ local required_fields = {
     enabled = function(val) local ty = type(val); return ty ~= 'boolean' and ty ~= 'number' end,
     randomization_chance = function(val) return type(val) ~= 'number' end
 }
+
+local function order_keys(conf, tbl)
+    local keys = {}
+    for i in pairs(tbl) do
+        keys[#keys + 1] = i
+    end
+    if conf.sorted_keys == nil then
+        table.sort(keys)
+    else
+        table.sort(keys, function(a, b)
+            local prio_a, prio_b = conf.sorted_keys[a], conf.sorted_keys[b]
+
+            if prio_a and prio_b then
+                return prio_a < prio_b
+            elseif prio_a then
+                return true
+            elseif prio_b then
+                return false
+            end
+            return a < b
+        end)
+    end
+
+    return keys
+end
 
 function ftr:get_default_value()
     local v = {}
@@ -75,7 +103,22 @@ end
 
 ---@return Config.Feature
 function ftr:with_name(name)
-    local o = {name = name, content = self.content}
+    local o = {name = name, content = self.content, sorted_keys = self.sorted_keys, ordered_keys = self.ordered_keys}
+    for i in pairs(required_fields) do
+        o[i] = self[i]
+    end
+    return setmetatable(o, ftr)
+end
+
+---@param keys string[]
+---@return Config.Feature
+function ftr:with_sorted_keys(keys)
+    local reversed = {}
+    for i, k in ipairs(keys) do
+        reversed[k] = i
+    end
+    local o = {name = self.name, content = self.content, sorted_keys = reversed}
+    o.ordered_keys = order_keys(o, self.content)
     for i in pairs(required_fields) do
         o[i] = self[i]
     end
@@ -86,9 +129,8 @@ end
 ---@param default_enabled boolean|number?
 ---@param default_rate number?
 ---@return Config.Feature
-function ftr.from(default_enabled, default_rate, table)
+function ftr.from(default_enabled, default_rate, table, sorted_keys)
     if (getmetatable(table) or {}).__title == ftr.__title then return table --[[@as Config.Feature]] end
-    local config = require 'pmdorand.config'
     ---@type {[string]: Config.Base}
     local out = {}
     local mtt
@@ -103,7 +145,11 @@ function ftr.from(default_enabled, default_rate, table)
         end
     end
     if default_enabled == nil then default_enabled = true end
-    return setmetatable({enabled = config.boolean(default_enabled):allow_boolable(true), randomization_chance = config.percentage(default_rate or 1.00, 0.01), content = out}, ftr)
+    local conf = {
+        enabled = config.boolean(default_enabled):permit_boolable(true), randomization_chance = config.percentage(default_rate or 1.00, 0.01), content = out
+    }
+    conf.ordered_keys = order_keys(conf, out)
+    return setmetatable(conf, ftr)
 end
 
 ---@return Config.Feature

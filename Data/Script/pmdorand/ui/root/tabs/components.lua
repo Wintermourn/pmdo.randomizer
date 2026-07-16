@@ -218,7 +218,7 @@ local function prompt_enabledness(menu, type, id)
     return promise
 end
 
-local function promp_component(menu, id)
+local function prompt_component(menu, id)
     local promise = async.promise()
     local actions = {}
     actions[#actions + 1] = {'Set Enabledness', true, function()
@@ -297,7 +297,7 @@ local inputs = {
             local at = cache.lines.at[cache.cursor]
             if at == nil then return end
             if at.type == 'component' then
-                promp_component(menu, at.id)
+                prompt_component(menu, at.id)
             else
                 prompt_enabledness(menu, at.type, at.id):on_resolved(function()
                     create_lines()

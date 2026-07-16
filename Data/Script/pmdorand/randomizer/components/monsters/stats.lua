@@ -40,6 +40,9 @@ component.builder()
         special_attack = config.stat(),
         special_defense = config.stat()
     }
+    :sorted_keys {
+        'health', 'attack', 'defense', 'special_attack', 'special_defense', 'speed'
+    }
     :on_step(function(id, data, state)
         local forms = data.Forms
         local random, conf = state:get_random(), state:get_config()
