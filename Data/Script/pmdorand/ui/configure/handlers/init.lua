@@ -20,7 +20,8 @@ end
 
 local default = {
     title = '',
-    display = function() return '' end
+    display = function() return '' end,
+    select = function() return false end
 }
 
 return {

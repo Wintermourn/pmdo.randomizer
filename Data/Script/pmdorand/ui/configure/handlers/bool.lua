@@ -18,5 +18,6 @@ return {
                 return strings.dynamic .. ('[color] (%02d%%)'):format(math.floor(v * 100))
             end
         end
-    end
+    end,
+    select = function() return false end
 }

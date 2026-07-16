@@ -25,6 +25,13 @@ component.builder()
             mismatch_limit          = config.percentage(0.90)
         }
     }
+    :sorted_keys {
+        'maximum_moves',
+        'stab_leaning',
+        'starting_moves',
+        'learnset',
+        'type_matching'
+    }
     :on_step(function(id, data, state)
     end)
     :register()

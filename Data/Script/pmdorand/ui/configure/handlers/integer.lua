@@ -2,5 +2,6 @@ return {
     title = 'Config.Int',
     display = function(c, v)
         return tostring(v)
-    end
+    end,
+    select = function() return false end
 }

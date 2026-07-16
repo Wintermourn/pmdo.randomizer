@@ -132,13 +132,20 @@
   <data name="pmdorand/settings:monster.stats/options.special_defense" xml:space="preserve"><value>Special Defense</value></data>
   <data name="pmdorand/settings:monster.stats/options.speed" xml:space="preserve"><value>Speed</value></data>
 
-  <data name="pmdorand/settings:monster.skills/options.learnset" xml:space="preserve"><value>Learned Moves</value></data>
   <data name="pmdorand/settings:monster.skills/options.maximum_moves" xml:space="preserve"><value>Maximum Moves</value></data>
   <data name="pmdorand/settings:monster.skills/options.stab_leaning" xml:space="preserve"><value>Same-type Leaning</value></data>
   <data name="pmdorand/settings:monster.skills/options.starting_moves" xml:space="preserve"><value>Starting Moves</value></data>
+  <data name="pmdorand/settings:monster.skills/options.starting_moves/options.minimum_moves" xml:space="preserve"><value>Minimum Moves</value></data>
+  <data name="pmdorand/settings:monster.skills/options.starting_moves/options.minimum_attacking_moves" xml:space="preserve"><value>Minimum Attacking Moves</value></data>
+  <data name="pmdorand/settings:monster.skills/options.learnset" xml:space="preserve"><value>Learned Moves</value></data>
+  <data name="pmdorand/settings:monster.skills/options.learnset/options.shuffle_existing" xml:space="preserve"><value>Shuffle Existing</value></data>
+  <data name="pmdorand/settings:monster.skills/options.learnset/options.minimum_spacing" xml:space="preserve"><value>Minimum Spacing</value></data>
+  <data name="pmdorand/settings:monster.skills/options.learnset/options.level_weighting" xml:space="preserve"><value>Level Weighting</value></data>
   <data name="pmdorand/settings:monster.skills/options.type_matching" xml:space="preserve"><value>Type Matching</value></data>
 
   <data name="pmdorand/settings:monster.typing/options.dual_type_chance" xml:space="preserve"><value>Dual Type Chance</value></data>
   <data name="pmdorand/settings:monster.typing/options.retained_type" xml:space="preserve"><value>Retained Type</value></data>
   <data name="pmdorand/settings:monster.typing/options.selection_rules" xml:space="preserve"><value>Selection Rules</value></data>
+  <data name="pmdorand/settings:monster.typing/options.selection_rules/banned_types" xml:space="preserve"><value>Banned Types</value></data>
+  <data name="pmdorand/settings:monster.typing/options.selection_rules/enforce_different_types" xml:space="preserve"><value>Enforce Different Types</value></data>
 </root>
