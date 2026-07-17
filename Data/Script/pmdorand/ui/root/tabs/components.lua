@@ -1,15 +1,16 @@
 local async = require 'lib.pmdorand.async'
 local play_sound = require 'pmdorand.util.play_sound'
+local soft_translate = require 'pmdorand.util.soft_translate'
 local configurations = require 'pmdorand.randomizer.cache.configurations'
 local generation_manager = require 'pmdorand.randomizer.core.manager'
 local configure = require 'pmdorand.ui.configure'
 local component_registry = require 'pmdorand.randomizer.core.registry' .get 'components'
 local provider_registry = require 'pmdorand.randomizer.core.registry' .get 'providers'
 local strings = {
-    component_count = STRINGS:FormatKey 'pmdorand:stats.components.count',
-    component_span = STRINGS:FormatKey 'pmdorand:stats.components.span',
-    enabled = STRINGS:FormatKey('pmdorand:enabled'),
-    disabled = STRINGS:FormatKey('pmdorand:disabled')
+    component_count = soft_translate 'pmdorand:stats.components.count',
+    component_span = soft_translate 'pmdorand:stats.components.span',
+    enabled = soft_translate('pmdorand:enabled'),
+    disabled = soft_translate('pmdorand:disabled')
 }
 
 local input_type = RogueEssence.FrameInput.InputType
@@ -60,7 +61,7 @@ local function create_lines()
     cache.components = components
 
     table.sort(providers, function(a, b)
-        return STRINGS:FormatKey('pmdorand/provider:'.. a) < STRINGS:FormatKey('pmdorand/provider:'.. b)
+        return soft_translate('pmdorand/provider:'.. a) < soft_translate('pmdorand/provider:'.. b)
     end)
 
     local current_height = 0
@@ -71,7 +72,7 @@ local function create_lines()
         ---@type {min: int, max: int}
         provider_enabled_count = enabled_counts[provider_id]
         table.sort(component_names, function(a, b)
-            return STRINGS:FormatKey('pmdorand/component:'.. a) < STRINGS:FormatKey('pmdorand/component:'.. b)
+            return soft_translate('pmdorand/component:'.. a) < soft_translate('pmdorand/component:'.. b)
         end)
 
         if provider_enabled_count.min == provider_enabled_count.max then
@@ -82,7 +83,7 @@ local function create_lines()
 
         current_height = current_height + 2
         texts[#texts + 1] = {
-            {STRINGS:FormatKey('pmdorand/provider:'.. provider_id), 6, current_height, RogueElements.DirH.Left},
+            {soft_translate('pmdorand/provider:'.. provider_id), 6, current_height, RogueElements.DirH.Left},
             {dynamic_text, -2, current_height, RogueElements.DirH.Right}
         }
         at[#texts] = {0, current_height, type = 'provider', id = provider_id}
@@ -90,15 +91,15 @@ local function create_lines()
         for _, component_id in ipairs(component_names) do
             enabledness = configurations.get_master(component_id).enabled
             if enabledness == true then
-                dynamic_text = STRINGS:FormatKey 'pmdorand:enabled'
+                dynamic_text = soft_translate 'pmdorand:enabled'
             elseif enabledness == false then
-                dynamic_text = STRINGS:FormatKey 'pmdorand:disabled'
+                dynamic_text = soft_translate 'pmdorand:disabled'
             else
-                dynamic_text = STRINGS:FormatKey 'pmdorand:dynamic' .. ('[color] (%02d%%)'):format(math.floor(enabledness * 100 + 0.5))
+                dynamic_text = soft_translate 'pmdorand:dynamic' .. ('[color] (%02d%%)'):format(math.floor(enabledness * 100 + 0.5))
             end
 
             texts[#texts + 1] = {
-                {STRINGS:FormatKey('pmdorand/component:'.. component_id), 10, current_height, RogueElements.DirH.Left},
+                {soft_translate('pmdorand/component:'.. component_id), 10, current_height, RogueElements.DirH.Left},
                 {dynamic_text, -2, current_height, RogueElements.DirH.Right}
             }
             at[#texts] = {4, current_height, type = 'component', id = component_id}
@@ -163,21 +164,21 @@ local function prompt_enabledness(menu, id)
     ---@type table
     local actions
     actions = {
-        {STRINGS:FormatKey 'pmdorand:set_all_to' .. STRINGS:FormatKey 'pmdorand:enabled', true, function()
+        {soft_translate 'pmdorand:set_all_to' .. soft_translate 'pmdorand:enabled', true, function()
             for _, component_id in ipairs(cache.components[id]) do
                 configurations.get_master(component_id).enabled = true
             end
             promise:resolve()
             _MENU:RemoveMenu()
         end},
-        {STRINGS:FormatKey 'pmdorand:set_all_to' .. STRINGS:FormatKey 'pmdorand:dynamic', true, function()
+        {soft_translate 'pmdorand:set_all_to' .. soft_translate 'pmdorand:dynamic', true, function()
             for _, component_id in ipairs(cache.components[id]) do
                 configurations.get_master(component_id).enabled = 0.5
             end
             promise:resolve()
             _MENU:RemoveMenu()
         end},
-        {STRINGS:FormatKey 'pmdorand:set_all_to' .. STRINGS:FormatKey 'pmdorand:disabled', true, function()
+        {soft_translate 'pmdorand:set_all_to' .. soft_translate 'pmdorand:disabled', true, function()
             for _, component_id in ipairs(cache.components[id]) do
                 configurations.get_master(component_id).enabled = false
             end
@@ -298,7 +299,7 @@ local inputs = {
 }
 
 return {
-    name = STRINGS:FormatKey 'pmdorand:tab.components',
+    name = select(2, RogueEssence.Text.Strings:TryGetValue('pmdorand:tab.components')) or 'pmdorand:tab.components',
     ---@param menu pmdorand.ui.root
     entered = function(menu)
         create_lines()

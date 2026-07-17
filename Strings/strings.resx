@@ -156,4 +156,8 @@
   <data name="pmdorand/settings:monster.typing/options.selection_rules" xml:space="preserve"><value>Selection Rules</value></data>
   <data name="pmdorand/settings:monster.typing/options.selection_rules/banned_types" xml:space="preserve"><value>Banned Types</value></data>
   <data name="pmdorand/settings:monster.typing/options.selection_rules/enforce_different_types" xml:space="preserve"><value>Enforce Different Types</value></data>
+  <data name="pmdorand/settings:monster.skills/options.type_matching/options.mismatch_limit" xml:space="preserve"><value>Mismatch Limit</value></data>
+  <data name="pmdorand/settings:monster.skills/options.type_matching/options.target_rate" xml:space="preserve"><value>Target Rate</value></data>
+
+  <data name="pmdorand/settings:universal.type_matchups/options.symmetrical" xml:space="preserve"><value>Symmetrical Matchups</value></data>
 </root>

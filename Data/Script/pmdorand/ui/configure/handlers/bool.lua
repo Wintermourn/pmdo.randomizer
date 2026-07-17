@@ -47,10 +47,12 @@ return {
                 _MENU:RemoveMenu()
             end}
         end
-        actions[#actions+1] = {STRINGS:FormatKey 'pmdorand:set_to' .. STRINGS:FormatKey 'pmdorand:dynamic', true, function()
-            promise:resolve(0.5)
-            _MENU:RemoveMenu()
-        end}
+        if entry.setting.allow_boolable then
+            actions[#actions+1] = {STRINGS:FormatKey 'pmdorand:set_to' .. STRINGS:FormatKey 'pmdorand:dynamic', true, function()
+                promise:resolve(0.5)
+                _MENU:RemoveMenu()
+            end}
+        end
 
         local function close()
             promise:reject()

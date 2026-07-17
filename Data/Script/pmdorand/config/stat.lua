@@ -3,7 +3,8 @@ local base = require 'pmdorand.config.base'
 
 local modes = {
     raw = 'r',
-    relative = 'e'
+    relative = 'e',
+    anchor = 'a'
 }
 
 ---@class Config.Stat : Config.Base
@@ -11,7 +12,7 @@ local stat = base.extend("Config.Stat")
 stat.structure = {
     minimum = config.integer(0, 0, math.maxinteger, 5),
     maximum = config.integer(0, 0, math.maxinteger, 5),
-    mode = config.option('r', {'r', 'e'}),
+    mode = config.option('r', {'r', 'e', 'a'}),
     value = config.integer(0, 0, math.maxinteger, 5),
     original_pull = config.float(0, -10, 10)
 }

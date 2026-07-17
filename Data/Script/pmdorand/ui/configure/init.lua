@@ -147,11 +147,22 @@ local entry_fetch = {
 }
 
 local function update_title(state)
-    local segments = {STRINGS:FormatKey('pmdorand/provider:'.. state.component.provider_id)}
+    local translation_key = 'pmdorand/provider:'.. state.component.provider_id
+    local segments = {(select(2, RogueEssence.Text.Strings:TryGetValue(translation_key))) or translation_key}--RogueEssence.Text.Strings:ContainsKey(translation_key) and STRINGS:FormatKey(translation_key) or translation_key}
     for _, level in ipairs(state.stack) do
-        segments[#segments + 1] = STRINGS:FormatKey(level.translation_key)
+        segments[#segments + 1] = (select(2, RogueEssence.Text.Strings:TryGetValue(level.translation_key))) or level.translation_key
+        --__CollectionExtensions.GetValueOrDefault(RogueEssence.Text.Strings, level.translation_key, level.translation_key)--RogueEssence.Text.Strings:ContainsKey(level.translation_key) and STRINGS:FormatKey(level.translation_key) or level.translation_key
     end
-    state.elements.frame.title:SetText(table.concat(segments, ' [color=#777777]>[color] '))
+    local text = state.elements.frame.title
+    text:SetText(table.concat(segments, ' [color=#777777]>[color] '))
+    local w = text:GetTextLength()
+    if w > state.menu.Bounds.Width - 20 then
+        text.AlignH = RogueElements.DirH.Right
+        text.Loc = RogueElements.Loc(state.menu.Bounds.Width - 10, 7) 
+    else
+        text.AlignH = RogueElements.DirH.Left
+        text.Loc = RogueElements.Loc(10, 7)
+    end
 end
 
 local function update_contents(state)
@@ -161,14 +172,15 @@ local function update_contents(state)
     if fetch == nil then error 'whar' end
     local keys, configs, values, value_pointers, translation_keys = fetch(current_structure(state), current_values(state))
 
-    local entry
+    local entry, translation_key
     for i, key in ipairs(keys) do
+        translation_key = translation_keys[key] or compile_translation_key(state, key.value.flat)
         entry = {
             texts = {
-                {STRINGS:FormatKey(translation_keys[key] or compile_translation_key(state, key.value.flat)), 12, (i - 1) * 12},
+                {RogueEssence.Text.Strings:ContainsKey(translation_key) and STRINGS:FormatKey(translation_key) or translation_key, 12, (i - 1) * 12},
                 {handlers.get(configs[key].__title).display(configs[key], values[key]), -2, (i - 1) * 12, RogueElements.DirH.Right}
             },
-            setting = configs[key], value = values[key], keys = key, value_pointer = value_pointers[key]
+            setting = configs[key], value = values[key], keys = key, value_pointer = value_pointers[key], translation_key = translation_key
         }
         by_index[#by_index + 1] = entry
         by_key[key] = entry
@@ -311,10 +323,13 @@ local inputs = {
             else
                 play_sound('Menu/Cancel', 0.8) 
             end
+            update_body(state)
         end
     }
 }
 
+local __Keys = luanet.namespace 'Microsoft.Xna.Framework.Input' .Keys
+local SDL = luanet.namespace 'SDL2' .SDL
 local function controls_listener(state, input)
     if input:JustPressed(__InputType.Menu) then
         _GAME:SE 'Menu/Cancel'
@@ -322,6 +337,14 @@ local function controls_listener(state, input)
         _MENU:RemoveMenu()
     end
     if state.input.debounce > 0 then state.input.debounce = state.input.debounce - 1 end
+
+    if input:BaseKeyDown(__Keys.LeftControl) and input:BaseKeyPressed(__Keys.C) then
+        local key = state.contents.by_index[state.position.cursor].translation_key
+        if key == nil then return _GAME:SE 'Menu/Cancel' end
+        SDL.SDL_SetClipboardText(key)
+        _GAME:SE 'Menu/Sort'
+        return
+    end
 
     for i,k in pairs(inputs.bindings) do
         if input:JustPressed(i) then

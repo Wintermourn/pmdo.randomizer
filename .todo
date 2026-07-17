@@ -1,6 +1,6 @@
 Randomizer:
     Monster:
-        [ ] Stats
+        [X] Stats
         [ ] Typing
             A couple ways to handle incompatible types: -
               * manual list of "type A cannot go with type B"
@@ -36,6 +36,8 @@ Randomizer:
     Zone:
         [ ] Stats
             NoEXP, ExpPercent, LevelCap, TeamRestrict, BagRestrict, KeepTreasure, 
+    Universal:
+        [ ] Type Matchups
     Naming:
         [ ] Monsters
         [ ] Items
@@ -45,10 +47,10 @@ Randomizer:
         [ ] Terrain(?)
         [ ] Zones
 UI:
-    [ ] Main Menu
+    [X] Main Menu
     [ ] Saved Settings/Presets
         Should these be stored in `SAVE/MODS/pmdorand`? Probably, right?
-    [ ] Settings
+    [X] Settings
 Registries:
     Effects:
         [ ] Item
@@ -64,5 +66,5 @@ Settings:
         Solves the replay issue and makes it easier to share with others.
         After generation, prompt the user to reload mods.
         Include the configuration inside the folder as well.
-    [ ] Spoiler Logging
+    [X] Spoiler Logging
         That is, noting down every single change in one really massive file for users to look through.

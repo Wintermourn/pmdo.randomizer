@@ -8,7 +8,10 @@ component.builder()
     :default_enabledness ( false )
     :using_provider 'monsters'
     :with_dependencies()
-    :with_settings {}
+    :with_settings {
+        slot_limit = config.integer(3, 1, 3),
+        slot_fill_chance = config.percentage(0.5),
+    }
     :on_step(function(id, data, state)
     end)
     :register()

@@ -13,7 +13,7 @@
 ---@field percentage fun(default: number?, step_size: number?): Config.Percentage
 ---@field stat fun(): Config.Stat
 ---@field string fun(default: string?, illegal_characters: string?): Config.String
----@field table fun(entries: {[string]: Config.FromTable}): Config.Table
+---@field table fun(entries: Config.FromTable): Config.Table
 ---@field custom_display fun(setting: Config.Base, display_method: fun(value: any): string): Config.CustomDisplay
 local r = setmetatable({}, {
     __index = function(_t, k)
