@@ -1,3 +1,6 @@
+.vscode/**/*
+.emmyrc.json
+
 # Local data changes
 Data/Monster
 Data/Intrinsic
