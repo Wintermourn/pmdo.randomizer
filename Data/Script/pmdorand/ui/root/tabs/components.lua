@@ -114,12 +114,16 @@ local function set_cursor_pos(menu, x, y)
     x, y = (x or 0) + 10, y or 0
     local menu_height = menu.menu.Bounds.Height - 50
     local v = math.floor(y - menu_height / 3 * 2)
+    local max = math.maxinteger
+    if #cache.lines.at > 0 then
+        max = cache.lines.at[#cache.lines.at][2] + 2 - menu_height
+    end
     if cache.current_scroll > v then
         if cache.current_scroll - v > menu_height / 3 then
-            cache.current_scroll = math.max(0, math.floor(cache.current_scroll - (cache.current_scroll - v - menu_height / 3)))
+            cache.current_scroll = math.min(max, math.max(0, math.floor(cache.current_scroll - (cache.current_scroll - v - menu_height / 3))))
         end
     elseif y > menu_height / 3 * 2 then
-        cache.current_scroll = v
+        cache.current_scroll = math.min(max, v)
     end
     menu.elements.cursor.Loc = RogueElements.Loc(x, y + 19 - cache.current_scroll)
 end
@@ -154,58 +158,34 @@ local function create_display_texts(menu)
     return output
 end
 
-local function prompt_enabledness(menu, type, id)
+local function prompt_enabledness(menu, id)
     local promise = async.promise()
     ---@type table
     local actions
-    if type == 'provider' then
-        actions = {
-            {STRINGS:FormatKey 'pmdorand:set_all_to' .. STRINGS:FormatKey 'pmdorand:enabled', true, function()
-                for _, component_id in ipairs(cache.components[id]) do
-                    configurations.get(component_id).enabled = true
-                end
-                promise:resolve()
-                _MENU:RemoveMenu()
-            end},
-            {STRINGS:FormatKey 'pmdorand:set_all_to' .. STRINGS:FormatKey 'pmdorand:dynamic', true, function()
-                for _, component_id in ipairs(cache.components[id]) do
-                    configurations.get(component_id).enabled = math.random()
-                end
-                promise:resolve()
-                _MENU:RemoveMenu()
-            end},
-            {STRINGS:FormatKey 'pmdorand:set_all_to' .. STRINGS:FormatKey 'pmdorand:disabled', true, function()
-                for _, component_id in ipairs(cache.components[id]) do
-                    configurations.get(component_id).enabled = false
-                end
-                promise:resolve()
-                _MENU:RemoveMenu()
-            end}
-        }
-    elseif type == 'component' then
-        local is_enabled = configurations.get(id).enabled
-
-        actions = {}
-        if is_enabled ~= true then
-            actions[#actions+1] = {STRINGS:FormatKey 'pmdorand:set_to' .. STRINGS:FormatKey 'pmdorand:enabled', true, function()
-                configurations.get(id).enabled = true
-                promise:resolve()
-                _MENU:RemoveMenu()
-            end}
-        end
-        if is_enabled ~= false then
-            actions[#actions+1] = {STRINGS:FormatKey 'pmdorand:set_to' .. STRINGS:FormatKey 'pmdorand:disabled', true, function()
-                configurations.get(id).enabled = false
-                promise:resolve()
-                _MENU:RemoveMenu()
-            end}
-        end
-        actions[#actions+1] = {STRINGS:FormatKey 'pmdorand:set_to' .. STRINGS:FormatKey 'pmdorand:dynamic', true, function()
-            configurations.get(id).enabled = math.random()
+    actions = {
+        {STRINGS:FormatKey 'pmdorand:set_all_to' .. STRINGS:FormatKey 'pmdorand:enabled', true, function()
+            for _, component_id in ipairs(cache.components[id]) do
+                configurations.get(component_id).enabled = true
+            end
+            promise:resolve()
+            _MENU:RemoveMenu()
+        end},
+        {STRINGS:FormatKey 'pmdorand:set_all_to' .. STRINGS:FormatKey 'pmdorand:dynamic', true, function()
+            for _, component_id in ipairs(cache.components[id]) do
+                configurations.get(component_id).enabled = 0.5
+            end
+            promise:resolve()
+            _MENU:RemoveMenu()
+        end},
+        {STRINGS:FormatKey 'pmdorand:set_all_to' .. STRINGS:FormatKey 'pmdorand:disabled', true, function()
+            for _, component_id in ipairs(cache.components[id]) do
+                configurations.get(component_id).enabled = false
+            end
             promise:resolve()
             _MENU:RemoveMenu()
         end}
-    end
+    }
+
     local function close()
         promise:reject()
         _MENU:RemoveMenu()
@@ -219,7 +199,12 @@ local function prompt_enabledness(menu, type, id)
 end
 
 local function prompt_component(menu, id)
-    local promise = async.promise()
+    local component = component_registry:get(id)
+    configure.open(component, configurations.get(id)):on_resolved(function()
+        create_lines()
+        cache.pending_update = create_display_texts(menu)
+    end)
+    --[[ local promise = async.promise()
     local actions = {}
     actions[#actions + 1] = {'Set Enabledness', true, function()
         prompt_enabledness(menu, 'component', id):on_resolved(function()
@@ -243,7 +228,7 @@ local function prompt_component(menu, id)
     require 'pmdorand.ui.choice' .open(
         function() promise:reject() end,
         table.unpack(actions)
-    )
+    ) ]]
 end
 
 local function jump_to_previous_provider(menu)
@@ -299,7 +284,7 @@ local inputs = {
             if at.type == 'component' then
                 prompt_component(menu, at.id)
             else
-                prompt_enabledness(menu, at.type, at.id):on_resolved(function()
+                prompt_enabledness(menu, at.id):on_resolved(function()
                     create_lines()
                     cache.pending_update = create_display_texts(menu)
                 end)

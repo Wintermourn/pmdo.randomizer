@@ -120,8 +120,16 @@
 
   <data name="pmdorand/component:universal.type_matchups" xml:space="preserve"><value>Type Matchups</value></data>
 
-  <data name="pmdorand/settings:standard/enabled" xml:space="preserve"><value>Enabled</value></data>
-  <data name="pmdorand/settings:standard/randomization_chance" xml:space="preserve"><value>Randomization Chance</value></data>
+  <data name="pmdorand/config:stab_towards" xml:space="preserve"><value>%.3g%% Towards</value></data>
+  <data name="pmdorand/config:stab_against" xml:space="preserve"><value>%.3g%% Against</value></data>
+
+  <data name="pmdorand/settings:feature/enabled" xml:space="preserve"><value>Enabled</value></data>
+  <data name="pmdorand/settings:feature/randomization_chance" xml:space="preserve"><value>Randomization Chance</value></data>
+  <data name="pmdorand/settings:stat/minimum" xml:space="preserve"><value>Minimum</value></data>
+  <data name="pmdorand/settings:stat/maximum" xml:space="preserve"><value>Maximum</value></data>
+  <data name="pmdorand/settings:stat/mode" xml:space="preserve"><value>Range Mode</value></data>
+  <data name="pmdorand/settings:stat/range" xml:space="preserve"><value>Maximum Range</value></data>
+  <data name="pmdorand/settings:stat/pull" xml:space="preserve"><value>Original Value Pull Strength</value></data>
 
 
 

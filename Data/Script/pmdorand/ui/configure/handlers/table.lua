@@ -7,7 +7,6 @@ return {
         state:push( entry.keys.value.flat, entry.setting, entry.value )
         state:update_title()
         state:update_contents()
-        state:update_body()
         return true
     end
 }

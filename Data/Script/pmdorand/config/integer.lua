@@ -2,6 +2,7 @@ local base = require 'pmdorand.config.base'
 
 ---@class Config.Integer : Config.Base
 --- Automatic type for tables used in config data.
+---@field jump_size int?
 local int = base.extend("Config.Int")
 int.minimum = 0
 int.maximum = 50
@@ -31,8 +32,8 @@ function int:stringify()
 end
 
 ---@return Config.Integer
-function int.new(default, min, max)
-    return setmetatable({default = default or 20, minimum = min or 0, maximum = max or 50}, int)
+function int.new(default, min, max, jump)
+    return setmetatable({default = default or 20, minimum = min or 0, maximum = max or 50, jump_size = jump}, int)
 end
 
 return int.new

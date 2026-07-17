@@ -1,3 +1,4 @@
+local config = require 'pmdorand.config'
 local base = require 'pmdorand.config.base'
 
 local modes = {
@@ -7,6 +8,13 @@ local modes = {
 
 ---@class Config.Stat : Config.Base
 local stat = base.extend("Config.Stat")
+stat.structure = {
+    minimum = config.integer(0, 0, math.maxinteger, 5),
+    maximum = config.integer(0, 0, math.maxinteger, 5),
+    mode = config.option('r', {'r', 'e'}),
+    value = config.integer(0, 0, math.maxinteger, 5),
+    original_pull = config.float(0, -10, 10)
+}
 stat.config = {
     minimum = 0, maximum = 255, range = {
         mode = modes.raw,
@@ -46,6 +54,17 @@ function stat:stringify(colorize)
         self.config.range.mode,
         self.config.range.value,
         self.config.originalPull
+    )
+end
+
+function stat.stringify_value(val, colorize)
+    return ("[%d, %d] %s(%s%d, %.2f)"):format(
+        val.minimum,
+        val.maximum,
+        colorize and '[color=#777777]' or '',
+        val.range.mode,
+        val.range.value,
+        val.originalPull
     )
 end
 

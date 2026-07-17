@@ -20,8 +20,9 @@ end
 
 local default = {
     title = '',
-    display = function() return '' end,
-    select = function() return false end
+    display = function(struct, value) return '' end,
+    select = function(state, entry) return false end,
+    move = function(state, entry, input, delta) return false end
 }
 
 return {

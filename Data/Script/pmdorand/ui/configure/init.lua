@@ -1,3 +1,5 @@
+local async = require 'lib.pmdorand.async'
+local config = require 'pmdorand.config'
 local graphics = require 'pmdorand.util.graphics'
 local create_text = require 'pmdorand.util.create_text'
 local text_pool = require 'pmdorand.util.text_pool'
@@ -50,9 +52,63 @@ local function data_key(structure, value)
     return {config = structure, value = value}
 end
 
+local stat_entries = {
+    {
+        struct = {'structure', 'minimum'},
+        value = 'minimum',
+        translation = 'pmdorand/settings:stat/minimum'
+    },
+    {
+        struct = {'structure', 'maximum'},
+        value = 'maximum',
+        translation = 'pmdorand/settings:stat/maximum'
+    },
+    {
+        struct = {'structure', 'mode'},
+        value = {'range', 'mode'},
+        translation = 'pmdorand/settings:stat/mode'
+    },
+    {
+        struct = {'structure', 'value'},
+        value = {'range', 'value'},
+        translation = 'pmdorand/settings:stat/mode'
+    },
+    {
+        struct = {'structure', 'original_pull'},
+        value = 'originalPull',
+        translation = 'pmdorand/settings:stat/pull'
+    }
+}
 local entry_fetch = {
+    ['Config.Stat'] = function(struct, vals)
+        local keys, configs, values, value_pointers, translation_keys = {}, {}, {}, {}, {}
+
+        local out_key
+        for _, entry in ipairs(stat_entries) do
+            out_key = data_key(entry.struct, entry.value)
+            keys[#keys + 1] = out_key
+            local ptr = struct
+            if #out_key.config > 1 then
+                for i = 1, #out_key.config do
+                    ptr = ptr[out_key.config[i]]
+                end 
+            end
+            configs[out_key] = ptr
+            ptr = vals
+            if #out_key.value > 1 then
+                for i = 1, #out_key.value - 1 do
+                    ptr = ptr[out_key.value[i]]
+                end
+            end
+            values[out_key] = ptr[out_key.value[#out_key.value]]
+            value_pointers[out_key] = {ptr, out_key.value[#out_key.value]}
+            translation_keys[out_key] = entry.translation
+        end
+
+        return keys, configs, values, value_pointers, translation_keys
+    end,
     ['Config.Table'] = function(struct, vals)
-        local keys, configs, values = {}, {}, {}
+        local keys, configs, values, value_pointers = {}, {}, {}, {}
 
         local out_key
         for key, conf in pairs(struct.content) do
@@ -60,13 +116,14 @@ local entry_fetch = {
             keys[#keys + 1] = out_key
             configs[out_key] = conf
             values[out_key] = vals[key]
+            value_pointers[out_key] = {vals, key}
         end
         table.sort(keys, sort_keys)
 
-        return keys, configs, values, blank
+        return keys, configs, values, value_pointers, blank
     end,
     ['Config.Feature'] = function(struct, vals)
-        local keys, configs, values, translation_keys = {}, {}, {}, {}
+        local keys, configs, values, value_pointers, translation_keys = {}, {}, {}, {}, {}
 
         local out_key
         for _, key in ipairs { 'enabled', 'randomization_chance' } do
@@ -74,16 +131,18 @@ local entry_fetch = {
             keys[#keys + 1] = out_key
             configs[out_key] = struct[key]
             values[out_key] = vals[key]
-            translation_keys[out_key] = 'pmdorand/settings:standard/'.. key
+            value_pointers[out_key] = {vals, key}
+            translation_keys[out_key] = 'pmdorand/settings:feature/'.. key
         end
         for _, key in ipairs(struct.ordered_keys) do
             out_key = data_key({'content', key}, {'options', key})
             keys[#keys + 1] = out_key
             configs[out_key] = struct.content[key]
             values[out_key] = vals.options[key]
+            value_pointers[out_key] = {vals.options, key}
         end
 
-        return keys, configs, values, translation_keys
+        return keys, configs, values, value_pointers, translation_keys
     end
 }
 
@@ -100,7 +159,7 @@ local function update_contents(state)
 
     local fetch = entry_fetch[getmetatable(current_structure(state)).__title]
     if fetch == nil then error 'whar' end
-    local keys, configs, values, translation_keys = fetch(current_structure(state), current_values(state))
+    local keys, configs, values, value_pointers, translation_keys = fetch(current_structure(state), current_values(state))
 
     local entry
     for i, key in ipairs(keys) do
@@ -109,7 +168,7 @@ local function update_contents(state)
                 {STRINGS:FormatKey(translation_keys[key] or compile_translation_key(state, key.value.flat)), 12, (i - 1) * 12},
                 {handlers.get(configs[key].__title).display(configs[key], values[key]), -2, (i - 1) * 12, RogueElements.DirH.Right}
             },
-            setting = configs[key], value = values[key], keys = key
+            setting = configs[key], value = values[key], keys = key, value_pointer = value_pointers[key]
         }
         by_index[#by_index + 1] = entry
         by_key[key] = entry
@@ -174,6 +233,7 @@ local function pop(state)
     _GAME:SE 'Menu/Cancel'
     local stack = state.stack
     if #stack == 1 then
+        state.promises.on_exit:resolve()
         _MENU:RemoveMenu()
         return 
     end
@@ -182,6 +242,20 @@ local function pop(state)
     local last = stack[#stack]
     state.position.cursor = last.memory and last.memory.cursor or 1
     state.position.scroll = last.memory and last.memory.scroll or math.min(0, math.floor(state.position.cursor * 10 - state.menu.Bounds.Height / 3 * 2))
+end
+
+---@return boolean
+local function interact_with_hovered(state, method, ...)
+    local hovered = state.contents.by_index[state.position.cursor]
+    if not hovered then
+        return false
+    end
+    local handler = handlers.get(hovered.setting.__title)
+    if type(handler[method]) ~= 'function' then
+        return false
+    end
+    local res = handler[method](state, hovered, ...)
+    return res ~= false
 end
 
 local inputs = {
@@ -204,6 +278,24 @@ local inputs = {
             
             update_body(state)
             play_sound('Menu/Select', state.input.sound_volume)
+        end,
+        [RogueElements.Dir8.Left] = function(state, input)
+            if interact_with_hovered(state, 'move', input, -1) then
+                play_sound('Menu/Select', state.input.sound_volume) 
+            else
+                play_sound('Menu/Cancel', math.max(0.1, state.input.sound_volume))
+                state.input.debounce = math.maxinteger
+            end
+            update_body(state)
+        end,
+        [RogueElements.Dir8.Right] = function(state, input)
+            if interact_with_hovered(state, 'move', input, 1) then
+                play_sound('Menu/Select', state.input.sound_volume) 
+            else
+                play_sound('Menu/Cancel', math.max(0.1, state.input.sound_volume))
+                state.input.debounce = math.maxinteger
+            end
+            update_body(state)
         end
     },
     bindings = {
@@ -214,16 +306,10 @@ local inputs = {
             update_body(state)
         end,
         [__InputType.Confirm] = function(state)
-            local hovered = state.contents.by_index[state.position.cursor]
-            if not hovered then
-                _GAME:SE 'Menu/Cancel'
-                return
-            end
-            local res = handlers.get(hovered.setting.__title).select(state, hovered)
-            if res then
-                _GAME:SE 'Menu/Confirm' 
+            if interact_with_hovered(state, 'select') then
+                play_sound('Menu/Confirm', 0.8) 
             else
-                _GAME:SE 'Menu/Cancel'
+                play_sound('Menu/Cancel', 0.8) 
             end
         end
     }
@@ -232,6 +318,7 @@ local inputs = {
 local function controls_listener(state, input)
     if input:JustPressed(__InputType.Menu) then
         _GAME:SE 'Menu/Cancel'
+        state.promises.on_exit:resolve()
         _MENU:RemoveMenu()
     end
     if state.input.debounce > 0 then state.input.debounce = state.input.debounce - 1 end
@@ -247,8 +334,8 @@ local function controls_listener(state, input)
     if inputs.directions[input.Direction] and (state.input.debounce == 0 or different_direction) then
         state.elements.cursor:ResetTimeOffset()
         state.input.sound_volume = different_direction and 1 or (state.input.sound_volume - state.input.sound_volume * 0.05)
-        inputs.directions[input.Direction](state, input)
         state.input.debounce = different_direction and 18 or 6
+        inputs.directions[input.Direction](state, input)
     end
     state.input.last_direction = input.Direction
 end
@@ -267,6 +354,9 @@ function public.open(component, user_settings)
             cursor = 1,
             scroll = 0
         },
+        promises = {
+            on_exit = async.promise()
+        },
         input = {
             sound_volume = 1,
             debounce = 0,
@@ -280,7 +370,9 @@ function public.open(component, user_settings)
         push = push, pop = pop,
         update_title = update_title,
         update_contents = update_contents,
-        update_body = update_body
+        update_body = update_body,
+        current_structure = current_structure,
+        current_values = current_values
     }
     push(state, component.id, component.settings, user_settings, 'pmdorand/component:'.. component.id)
 
@@ -304,6 +396,8 @@ function public.open(component, user_settings)
     update_body(state)
 
     _MENU:AddMenu(state.menu, true)
+
+    return state.promises.on_exit
 end
 
 return public

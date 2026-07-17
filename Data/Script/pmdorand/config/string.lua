@@ -27,7 +27,7 @@ end
 ---@return Config.String
 function str.new(default, illegal)
     if illegal and illegal:sub(1,1) ~= '[' then
-        illegal = string.format('[%s]', illegal:gsub('[%$%%%^%*%(%)%-%+%.%?]', '%%%0'))
+        illegal = string.format('[%s]', illegal)
     end
     return setmetatable({default = default or '', illegal_characters = illegal or ''}, str)
 end

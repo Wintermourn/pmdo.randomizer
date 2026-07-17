@@ -55,6 +55,7 @@ end
 ---@return int
 function public.get_enabled_count()
     local min, max = 0, 0
+    local config
     for component_id in configuration.keys() do
         config = configuration.get( component_id )
         if config.enabled == true then
