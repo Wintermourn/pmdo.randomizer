@@ -1,4 +1,7 @@
+local configurations = require 'pmdorand.randomizer.cache.configurations'
+
 ---@class pmdorand.state.component
+---@field spoilers {[string]: {[string]: {old: any, new: any}}}
 local component_state = {
     ---@type string
     identifier = ''
@@ -30,12 +33,23 @@ function component_state.get_random( self, identifier )
     return require 'pmdorand.randomizer.cache.random' .get_generator( identifier or (self and self.identifier) ) --[[@as pmdorand.random]]
 end
 
+---@param sort_data number[]
+function component_state:log_spoiler(identifier, key, data)
+    local core_config = configurations.get()
+    if not core_config.personal.log_spoilers then return end
+    local changes = self.spoilers[identifier] or {}
+    changes[key] = data
+    self.spoilers[identifier] = changes
+end
+
 local public = {}
 
 ---@return pmdorand.state.component
 function public.new(id)
+    local core_config = configurations.get()
     local o = {
-        identifier = id
+        identifier = id,
+        spoilers = core_config.personal.log_spoilers and {}
     }
 
     return setmetatable(o, component_state)

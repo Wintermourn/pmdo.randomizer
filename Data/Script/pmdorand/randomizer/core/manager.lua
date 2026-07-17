@@ -57,7 +57,7 @@ function public.get_enabled_count()
     local min, max = 0, 0
     local config
     for component_id in configuration.keys() do
-        config = configuration.get( component_id )
+        config = configuration.get_master( component_id )
         if config.enabled == true then
             min = min + 1
             max = max + 1
@@ -74,7 +74,7 @@ function public.get_enabled_count()
     return min, max
 end
 
-function public.start()
+function public.start(dry_run)
     if manager.is_generating then return false end
     random_cache.construct_all()
     local random = random_cache.get_generator()
@@ -82,15 +82,17 @@ function public.start()
     local config
     local active_components = {}
     for component_id in configuration.keys() do
-        config = configuration.get( component_id )
+        config = configuration.get_master( component_id )
         if config.enabled == true or (type(config.enabled) == 'number' and random:bool(config.enabled)) then
             active_components[#active_components + 1] = components:get( component_id )
         end
     end
 
+    configuration.copy_to_working_path()
+
     manager.err = nil
     manager.pass_manager = pass.generate_passes(active_components)
-    manager.promise = manager.pass_manager:run():on_resolved(function()
+    manager.promise = manager.pass_manager:run(configuration.get().personal.log_spoilers, dry_run):on_resolved(function()
         manager.is_generating = false
         for _, fn in pairs(manager.subscribers.on_success.by_id) do
             fn()

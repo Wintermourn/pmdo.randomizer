@@ -7,6 +7,7 @@ Data/Intrinsic
 Data/Item
 Data/Skill
 Data/Universal.json
+Spoilers/
 
 # C# libraries for Archipelago. Not currently important.
 Libraries/*.dll

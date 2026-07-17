@@ -1,6 +1,7 @@
 local config = require 'pmdorand.config'
 local interlace = require 'lib.pmdorand.interlace'
 local header = require 'pmdorand.util.header'
+local deepcopy = require 'pmdorand.util.deepcopy'
 local nyaml = require 'lib.pmdorand.nyaml'
 nyaml(header.Path, 'Libraries', 'SharpYaml.dll')
 
@@ -31,7 +32,10 @@ local cache = {
     structures = {
         core = require 'pmdorand.randomizer.core.settings' .structure,
         components = {}
-    }
+    },
+    ---@type {core: table, components: table}
+    ---@diagnostic disable-next-line: missing-fields, assign-type-mismatch
+    working_copy = {}
 }
 
 local function recursive_build_defaults(output, input)
@@ -70,6 +74,15 @@ function public.construct_defaults()
     return { core = cache.core, components = cache.components }
 end
 
+function public.copy_to_working_path()
+    local out = {
+        core = deepcopy(cache.core),
+        components = deepcopy(cache.components)
+    }
+
+    cache.working_copy = out
+end
+
 ---@return fun(): string
 function public.keys()
     local keys = {}
@@ -81,9 +94,18 @@ function public.keys()
     end
 end
 
-function public.get( identifier )
+--- Returns the user's settings. **These can be changed during generation.**
+---@return ({public: table, personal: table})|Config.Feature
+function public.get_master( identifier )
     if identifier == nil then return cache.core end
     return cache.components[identifier]
+end
+
+--- Returns a copy of the user's settings. These will not be changed by the player during generation.
+---@return ({public: table, personal: table})|Config.Feature
+function public.get( identifier )
+    if identifier == nil then return cache.working_copy.core end
+    return cache.working_copy.components[identifier]
 end
 
 local base_path = IO.Path.Combine(

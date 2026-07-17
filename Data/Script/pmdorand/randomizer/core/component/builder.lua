@@ -30,9 +30,17 @@ function builder:using_provider( identifier )
 end
 
 ---Provides a step function to the component, run once for every key provided by a provider. Can be used to mutate game data and mark them as modified and to be saved when finished.
+---<br>It is recommended to use *`random:bool(state:get_randomization_chance())`* to support randomly skipping entries or portions of entries.
 ---@param fn fun(id: string, data: any, state: pmdorand.state.component)
 function builder:on_step(fn)
     self.data.step_fn = fn
+    return self
+end
+
+---Provides a spoiler-logging function to the component, run after all changes have been made. Lines have to be written to the file via `file:write(...)`.
+---@param fn fun(file: file, state: pmdorand.state.component)
+function builder:log_spoilers(fn)
+    self.data.spoiler_fn = fn
     return self
 end
 
@@ -155,7 +163,7 @@ end
 
 ---@return pmdorand.component
 function builder:build()
-    local provider = require 'pmdorand.randomizer.core.component' .meta.component
+    local component = require 'pmdorand.randomizer.core.component' .meta.component
 
     local remaining_requirements = {}
     if self.data.id == nil then remaining_requirements[#remaining_requirements+1] = 'an id' end
@@ -183,8 +191,9 @@ function builder:build()
         associated_generator = self.data.associated_generator,
         settings = settings,
         step_fn = self.data.step_fn,
+        log_spoilers = self.data.spoiler_fn,
         dependencies = self.data.dependencies or {}
-    }, provider)
+    }, component)
 end
 
 ---@return boolean, pmdorand.component

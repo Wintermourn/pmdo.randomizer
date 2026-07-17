@@ -26,6 +26,12 @@ local conditions = {
 ---@field condition pmdorand.enum.dependency_conditions
 ---@field is_hard boolean
 
+local default_format = "\t%s:\t%s\t-> %s"
+---@param state pmdorand.state.component
+function component.log_spoilers(file, state)
+    file:write 'NYI'
+end
+
 return {
     meta = {
         component = component

@@ -46,7 +46,7 @@ local function create_lines()
         --[[@cast current_counts -?]]
 
         current_components_list[#current_components_list + 1] = id
-        enabledness = configurations.get(id).enabled
+        enabledness = configurations.get_master(id).enabled
         if enabledness == true then
             current_counts.min = current_counts.min + 1
             current_counts.max = current_counts.max + 1 
@@ -88,7 +88,7 @@ local function create_lines()
         at[#texts] = {0, current_height, type = 'provider', id = provider_id}
         current_height = current_height + 12
         for _, component_id in ipairs(component_names) do
-            enabledness = configurations.get(component_id).enabled
+            enabledness = configurations.get_master(component_id).enabled
             if enabledness == true then
                 dynamic_text = STRINGS:FormatKey 'pmdorand:enabled'
             elseif enabledness == false then
@@ -165,21 +165,21 @@ local function prompt_enabledness(menu, id)
     actions = {
         {STRINGS:FormatKey 'pmdorand:set_all_to' .. STRINGS:FormatKey 'pmdorand:enabled', true, function()
             for _, component_id in ipairs(cache.components[id]) do
-                configurations.get(component_id).enabled = true
+                configurations.get_master(component_id).enabled = true
             end
             promise:resolve()
             _MENU:RemoveMenu()
         end},
         {STRINGS:FormatKey 'pmdorand:set_all_to' .. STRINGS:FormatKey 'pmdorand:dynamic', true, function()
             for _, component_id in ipairs(cache.components[id]) do
-                configurations.get(component_id).enabled = 0.5
+                configurations.get_master(component_id).enabled = 0.5
             end
             promise:resolve()
             _MENU:RemoveMenu()
         end},
         {STRINGS:FormatKey 'pmdorand:set_all_to' .. STRINGS:FormatKey 'pmdorand:disabled', true, function()
             for _, component_id in ipairs(cache.components[id]) do
-                configurations.get(component_id).enabled = false
+                configurations.get_master(component_id).enabled = false
             end
             promise:resolve()
             _MENU:RemoveMenu()
@@ -200,7 +200,7 @@ end
 
 local function prompt_component(menu, id)
     local component = component_registry:get(id)
-    configure.open(component, configurations.get(id)):on_resolved(function()
+    configure.open(component, configurations.get_master(id)):on_resolved(function()
         create_lines()
         cache.pending_update = create_display_texts(menu)
     end)

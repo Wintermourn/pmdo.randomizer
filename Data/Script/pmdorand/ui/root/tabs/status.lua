@@ -12,6 +12,8 @@ local strings = {
     browse_configurations = STRINGS:FormatKey 'pmdorand:configurations.browse'
 }
 
+local __Keys = luanet.namespace 'Microsoft.Xna.Framework.Input' .Keys
+
 local cursor = 0
 local last_dir
 local inputs = {
@@ -28,10 +30,10 @@ local inputs = {
         end
     },
     bindings = {
-        [input_type.Confirm] = function()
+        [input_type.Confirm] = function(menu, input)
             _GAME:SE("Menu/Confirm")
             if cursor == 0 then
-                generation_manager.start()
+                generation_manager.start(input:BaseKeyDown(__Keys.LeftAlt))
             else
 
             end

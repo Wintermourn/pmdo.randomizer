@@ -6,6 +6,7 @@ local state_cache = require 'pmdorand.randomizer.cache.states'
 local random_cache = require 'pmdorand.randomizer.cache.random'
 local async = require 'lib.pmdorand.async'
 
+local IO = luanet.namespace 'System.IO'
 local __Environment = luanet.import_type 'System.Environment'
 
 ---@class pmdorand.pass.manager
@@ -21,16 +22,29 @@ local pass_manager = {
 }
 pass_manager.__index = pass_manager
 
-function pass_manager:run()
+function pass_manager:run(generate_spoilers, dry_run)
     state_cache.dump()
+
+    -- Delete spoilers
+    local path = IO.Path.Combine(RogueEssence.PathMod.APP_PATH, require 'pmdorand.util.header'.Path, 'Spoilers')
+    if IO.Directory.Exists(path) then
+        if generate_spoilers then
+            for file in luanet.each(IO.Directory.GetFiles(path)) do
+                IO.File.Delete(file)
+            end
+        else
+            IO.Directory.Delete(path, true)
+        end
+    end
+
     self.promise = async.spawn(
         function()
             local pass
             for i = 1, #self.passes do
                 self.current_pass = i
                 pass = self.passes[i]
-                pass:run(self)
-                if false == false and self.final_provider_pass[pass.provider.id] == i then
+                pass:run(self, generate_spoilers, dry_run)
+                if false == false and self.final_provider_pass[pass.provider.id] == i and not dry_run then
                     self.state = ("Saving [%s]..."):format(pass.provider.id)
                     pass.provider:flush_cache()
                 end
@@ -50,14 +64,23 @@ pass.__index = pass
 
 ---@async
 ---@param manager pmdorand.pass.manager
-function pass:run(manager)
+function pass:run(manager, generate_spoilers, dry_run)
+    local spoiler_path = IO.Path.Combine(RogueEssence.PathMod.APP_PATH, require 'pmdorand.util.header'.Path, 'Spoilers')
+    if generate_spoilers then
+        if not IO.Directory.Exists(spoiler_path) then
+            IO.Directory.CreateDirectory(spoiler_path) 
+        end
+    end
+
     local component_states = {}
-    ---@type {[string]: number}
-    local iteration_chance = {}
+    ---@type {[string]: file}
+    local files = {}
     for _, component in ipairs(self.components) do
         local state = state_cache.component(component.id)
         component_states[component.id] = state
-        iteration_chance[component.id] = state:get_randomization_chance()
+        if generate_spoilers then
+            files[component.id] = io.open(IO.Path.Combine(spoiler_path, component.id ..'.txt'), 'w')
+        end
     end
 
     local random = random_cache.get_generator()
@@ -75,19 +98,48 @@ function pass:run(manager)
         n=n+1
         local data = get_method(provider, identifier, provider_state)
         for _, component in ipairs(self.components) do
-            ichance = iteration_chance[component.id]
-            if ichance >= 1 or random:bool(ichance) then
-                component.step_fn(identifier --[[@as string]], data, component_states[component.id])
-            end
+            component.step_fn(identifier --[[@as string]], data, component_states[component.id])
         end
-        if false == true then
+        if false == true and not dry_run then
             provider.methods.flush(identifier --[[@as string]], data, provider_state) 
         end
         
         if __Environment.TickCount64 > next_yield then
-            manager.state = pass_template:format(self.pass_id, provider.id, n, key_count)
+            if dry_run then
+                manager.state = 'Dry '.. pass_template:format(self.pass_id, provider.id, n, key_count)
+            else
+                manager.state = pass_template:format(self.pass_id, provider.id, n, key_count)
+            end
             async.yield()
             next_yield = __Environment.TickCount64 + 100
+        end
+    end
+
+    if generate_spoilers then
+        local spoiler_template = "Pass %d [%s]: Spoiling %s ..."
+        for _, component in ipairs(self.components) do
+            if dry_run then
+                manager.state = 'Dry '.. spoiler_template:format(self.pass_id, provider.id, component.id)
+            else
+                manager.state = spoiler_template:format(self.pass_id, provider.id, component.id)
+            end
+            local file = files[component.id]
+            local state = component_states[component.id]
+
+            component.log_spoilers(file, state)
+            if io.type(file) == "file" then
+                file:close()
+            end
+        
+            if __Environment.TickCount64 > next_yield then
+                if dry_run then
+                    manager.state = 'Dry '.. spoiler_template:format(self.pass_id, provider.id, component.id)
+                else
+                    manager.state = spoiler_template:format(self.pass_id, provider.id, component.id)
+                end
+                async.yield()
+                next_yield = __Environment.TickCount64 + 100
+            end
         end
     end
 end
