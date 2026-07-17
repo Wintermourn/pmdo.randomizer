@@ -18,7 +18,7 @@ function cd:stringify(...)
     return self.config:stringify(...)
 end
 
----@return Config.Boolean
+---@return Config.CustomDisplay
 function cd.new(setting, method)
     return setmetatable({config = setting, method = method}, cd)
 end
