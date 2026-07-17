@@ -205,31 +205,6 @@ local function prompt_component(menu, id)
         create_lines()
         cache.pending_update = create_display_texts(menu)
     end)
-    --[[ local promise = async.promise()
-    local actions = {}
-    actions[#actions + 1] = {'Set Enabledness', true, function()
-        prompt_enabledness(menu, 'component', id):on_resolved(function()
-            create_lines()
-            cache.pending_update = create_display_texts(menu)
-            _MENU:RemoveMenu()
-        end):on_rejected(function()
-            _MENU:RemoveMenu()
-        end)
-    end}
-    actions[#actions + 1] = {'Configure', true, function()
-        _MENU:RemoveMenu()
-        local component = component_registry:get(id)
-        configure.open(component, configurations.get(id))
-    end}
-    local function close()
-        promise:reject()
-        _MENU:RemoveMenu()
-    end
-    actions[#actions + 1] = {'Cancel', true, close}
-    require 'pmdorand.ui.choice' .open(
-        function() promise:reject() end,
-        table.unpack(actions)
-    ) ]]
 end
 
 local function jump_to_previous_provider(menu)
@@ -298,6 +273,9 @@ local inputs = {
     }
 }
 
+local __Keys = luanet.namespace 'Microsoft.Xna.Framework.Input' .Keys
+local SDL = luanet.namespace 'SDL2' .SDL
+
 return {
     name = select(2, RogueEssence.Text.Strings:TryGetValue('pmdorand:tab.components')) or 'pmdorand:tab.components',
     ---@param menu pmdorand.ui.root
@@ -314,6 +292,15 @@ return {
     end,
     ---@param menu pmdorand.ui.root
     input = function(menu, input)
+        if input:BaseKeyDown(__Keys.LeftControl) and input:BaseKeyPressed(__Keys.C) then
+            local at = cache.lines.at[cache.cursor]
+            local key = string.format('pmdorand/%s:%s', at.type, at.id)
+            if key == nil then return _GAME:SE 'Menu/Cancel' end
+            SDL.SDL_SetClipboardText(key)
+            _GAME:SE 'Menu/Sort'
+            return
+        end
+
         for i, k in pairs(inputs.bindings) do
             if input:JustPressed(i) then
                 menu.elements.cursor:ResetTimeOffset()
