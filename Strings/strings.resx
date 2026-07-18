@@ -119,6 +119,7 @@
   <data name="pmdorand/component:zone.monsters" xml:space="preserve"><value>Inhabitants</value></data>
 
   <data name="pmdorand/component:universal.type_matchups" xml:space="preserve"><value>Type Matchups</value></data>
+  <data name="pmdorand/component:universal.stats" xml:space="preserve"><value>Stats</value></data>
 
   <data name="pmdorand/config:stab_towards" xml:space="preserve"><value>%.3g%% Towards</value></data>
   <data name="pmdorand/config:stab_against" xml:space="preserve"><value>%.3g%% Against</value></data>

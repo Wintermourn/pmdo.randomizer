@@ -1,8 +1,25 @@
 local component = require 'pmdorand.randomizer.core.component'
 local config = require 'pmdorand.config'
 local math_util = require 'pmdorand.util.math'
+local enumerate = require 'pmdorand.util.enumerate'
 
-local __ElementTableState = luanet.import_type 'PMDC.Dungeon.ElementTableState'
+local steps = {
+    ['PMDC.Dungeon.NaturalPercentRegenEvent'] = function(id, value, state, conf, random)
+        if conf.natural_regeneration.enabled and random:bool(conf.natural_regeneration.randomization_chance) then
+            for _i, k in ipairs {
+                {conf.natural_regeneration.options.out_of_combat, "RegenPercent"},
+                {conf.natural_regeneration.options.in_combat, "RegenPercentCombat"},
+                {conf.natural_regeneration.options.starving, "StarvePercent"}
+            } do
+                if type(k[1]) == 'number' then
+                    value[k[2]] = k[1]
+                else
+                    -- todo
+                end
+            end
+        end
+    end
+}
 
 component.builder()
     :with_id 'universal.stats'
@@ -37,5 +54,15 @@ component.builder()
         }
     }
     :on_step(function(id, data, state)
+        local conf, random = state:get_config(), state:get_random()
+
+        --print(data.OnTurnEnds:GetEnumerator())
+        for entry in enumerate.enumerate_ienumerableable(data.OnTurnEnds) do
+            print(entry.Key, entry.Value)
+            local step = steps[entry.Value:GetType().FullName]
+            if step ~= nil then
+                step(id, entry.Value, state, conf, random) 
+            end
+        end
     end)
     :register()

@@ -92,6 +92,7 @@ function public.start(dry_run)
 
     manager.err = nil
     manager.pass_manager = pass.generate_passes(active_components)
+    manager.is_generating = true
     manager.promise = manager.pass_manager:run(configuration.get().personal.log_spoilers, dry_run):on_resolved(function()
         manager.is_generating = false
         for _, fn in pairs(manager.subscribers.on_success.by_id) do
@@ -104,8 +105,6 @@ function public.start(dry_run)
             fn()
         end
     end)
-
-    manager.is_generating = true
     return true
 end
 

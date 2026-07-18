@@ -9,6 +9,8 @@ local async = {
     current_time = 0
 }
 
+local blank = {}
+
 ---@class Async.Condition
 ---@field length int?
 ---@field target int?
@@ -93,7 +95,7 @@ end
 
 ---@param fn async fun(...)
 function _promise:on_resolved(fn)
-    if self.finished and self.resolved then fn(unpack(self.return_values)) end
+    if self.finished and self.resolved then fn(unpack(self.return_values or blank)) end
     local on_res = self.subscribers.on_resolved
     on_res[#on_res + 1] = fn
     return self
@@ -101,7 +103,7 @@ end
 
 ---@param fn async fun(...)
 function _promise:on_rejected(fn)
-    if self.finished and not self.resolved then fn(unpack(self.return_values)) end
+    if self.finished and not self.resolved then fn(unpack(self.return_values or blank)) end
     local on_res = self.subscribers.on_rejected
     on_res[#on_res + 1] = fn
     return self
@@ -155,17 +157,55 @@ function public.wait_for(arg)
     if not async.current_task then return end
 
     if type(arg) == 'function' then
-        local id, task = public.spawn(arg, async.current_task)
-        task.blocking[#task.blocking+1] = async.current_task
-        async.current_task.condition = {target = id}
+        local _promise, id = public.spawn(arg, async.current_task)
+
+        if async.tasks[id] ~= nil then
+            async.current_task.condition = {target = id}
+            async.current_task.status = 'wait:F'
+            return coroutine.yield()
+        else
+            async.current_task.status = 'running'
+            if async.current_task.continue_arguments then
+                local args = async.current_task.continue_arguments
+                async.current_task.continue_arguments = nil
+                return unpack(args) 
+            end
+        end
+    elseif type(arg) == 'table' and getmetatable(table) == _promise then
+        if arg.finished then
+            if arg.resolved then
+                return true, unpack(arg.return_values or blank)
+            else
+                return false, unpack(arg.return_values or blank)
+            end
+        else
+            local current = async.current_task
+            arg:on_resolved(function(...)
+                current.continue_arguments = {true, ...}
+                current.status = 'waiting'
+            end)
+            arg:on_rejected(function(...)
+                current.continue_arguments = {false, ...}
+                current.status = 'waiting'
+            end)
+            current.status = 'wait:F'
+            return coroutine.yield()
+        end
     else
-        if not async.tasks[arg] then return end
         local task = async.tasks[arg]
+        if not task then
+            if async.current_task.continue_arguments then
+                local args = async.current_task.continue_arguments
+                async.current_task.continue_arguments = nil
+                return unpack(args)
+            end
+            return
+        end
         task.blocking[#task.blocking+1] = async.current_task
         async.current_task.condition = {target = arg}
+        async.current_task.status = "wait:F"
+        return coroutine.yield()
     end
-    async.current_task.status = "wait:F"
-    return coroutine.yield()
 end
 
 function public.cancel(id, ...)
@@ -201,7 +241,13 @@ function public.update(time)
                 end
             end
         elseif task.status == 'waiting' then
-            task:resume()
+            if task.continue_arguments then
+                local args = task.continue_arguments
+                task.continue_arguments = nil
+                task:resume(unpack(args))
+            else
+                task:resume() 
+            end
         end
     end
 end

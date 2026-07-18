@@ -6,7 +6,7 @@ Data/Monster
 Data/Intrinsic
 Data/Item
 Data/Skill
-Data/Universal.json
+Data/Universal.jsonpatch
 Spoilers/
 
 # C# libraries for Archipelago. Not currently important.
