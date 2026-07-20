@@ -8,6 +8,9 @@ component.builder()
     :default_enabledness ( false )
     :using_provider 'zones'
     :with_dependencies()
+        :after 'monster.typing' :is 'soft'
+        :after 'monster.stats' :is 'soft'
+        :after 'monster.promotions' :is 'soft'
     :with_settings {}
     :on_step(function(id, data, state)
     end)

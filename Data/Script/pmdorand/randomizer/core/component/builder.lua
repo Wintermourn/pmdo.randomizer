@@ -134,14 +134,14 @@ do
             candidate = dependencies_builder[idx]
             if type(candidate) == 'function' then
                 return disowner(self.builder, function(s, ...)
-                    self.builder.dependencies[self.key] = {condition = self.condition, is_hard = self.is_hard}
+                    self.builder.dependencies[self.key] = {key = self.key, condition = self.condition, is_hard = self.is_hard}
                     return candidate(s, ...)
                 end)
             end
             candidate = builder[idx]
             if type(candidate) == 'function' then
                 return disowner(self.builder.builder, function(s, ...)
-                    self.builder.dependencies[self.key] = {condition = self.condition, is_hard = self.is_hard}
+                    self.builder.dependencies[self.key] = {key = self.key, condition = self.condition, is_hard = self.is_hard}
                     self.builder.builder.data.dependencies = self.builder.dependencies
                     return candidate(s, ...)
                 end)
@@ -213,6 +213,14 @@ function builder:build()
             settings = settings:with_sorted_keys(self.data.sorted_settings)
         end
     end
+
+    local deps = {}
+    if self.data.dependencies then
+        for i,k in pairs(self.data.dependencies) do
+            deps[#deps + 1] = k
+        end    
+    end
+
     return setmetatable({
         id = self.data.id,
         provider_id = self.data.provider_id,
@@ -220,7 +228,7 @@ function builder:build()
         settings = settings,
         step_fn = self.data.step_fn,
         log_spoilers = self.data.spoiler_fn,
-        dependencies = self.data.dependencies or {},
+        dependencies = deps,
 
         pre_init_step = self.data.pre_init_step,
         pre_pass_step = self.data.pre_pass_step,

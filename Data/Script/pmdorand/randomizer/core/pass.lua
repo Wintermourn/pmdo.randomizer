@@ -161,7 +161,7 @@ function public.generate_passes(enabled_components)
         graph[component.id] = {}
         in_degree[component.id] = 0
         by_id[component.id] = component
-        dependencies[component.id] = component
+        dependencies[component.id] = {}
     end
 
     local comp_key, dep_key
@@ -182,10 +182,12 @@ function public.generate_passes(enabled_components)
     end
 
     ---@type pmdorand.component[]
-    local sorted, queue = {}, {}
+    local sorted, queue, leftovers = {}, {}, {}
 
     for id, ct in pairs(in_degree) do
-        if ct == 0 then table.insert(queue, id) end
+        if ct == 0 then
+            table.insert(#graph[id] == 0 and leftovers or queue, id)
+        end
     end
 
     local current_id
@@ -199,6 +201,10 @@ function public.generate_passes(enabled_components)
                 table.insert(queue, target)
             end
         end
+    end
+
+    for _, id in ipairs(leftovers) do
+        table.insert(sorted, by_id[id])
     end
 
     if #sorted ~= #enabled_components then
@@ -237,6 +243,13 @@ function public.generate_passes(enabled_components)
             }, pass))
             final_provider_pass[component.provider_id] = #passes
             pass_indices[component.id] = #passes
+        end
+    end
+    
+    for i, p in ipairs(passes) do
+        print(string.format("Pass %d: %s", i, p.provider.id))
+        for _, v in ipairs(p.components) do
+            print("\t- ".. v.id)
         end
     end
 

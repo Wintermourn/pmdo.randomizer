@@ -8,6 +8,8 @@ component.builder()
     :default_enabledness ( false )
     :using_provider 'zones'
     :with_dependencies()
+        :after 'item.effects' :is 'soft'
+        :after 'item.stats' :is 'soft'
     :with_settings {}
     :on_step(function(id, data, state)
     end)
