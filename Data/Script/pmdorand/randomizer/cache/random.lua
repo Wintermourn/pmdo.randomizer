@@ -5,6 +5,10 @@ local cache = {
     generators = {},
     shape = {},
     seeds = {
+        ---@type boolean
+        is_base_blank = false,
+        time_seed = 0,
+        ---@type string
         base_seed = '',
         ---@type {[string]: (string|number)?}
         specific_seeds = {}
@@ -18,7 +22,7 @@ local function resolve_seed( name, shape )
         candidate = cache.seeds.specific_seeds[k]
         if candidate then return candidate end
     end
-    return cache.seeds.base_seed
+    return cache.seeds[cache.seeds.is_base_blank and 'time_seed' or 'base_seed']
 end
 
 local public = {}
@@ -53,7 +57,11 @@ function public.get_seed( identifier )
 end
 
 function public.construct_all()
-    cache.fallback_generator = random.new(cache.seeds.base_seed)
+    if cache.seeds.base_seed == '' then
+        cache.seeds.is_base_blank = true
+        cache.seeds.time_seed = os.time()
+    end
+    cache.fallback_generator = random.new(cache.seeds[cache.seeds.is_base_blank and 'time_seed' or 'base_seed'])
     for i in pairs(cache.shape) do
         cache.generators[i] = random.new(resolve_seed(i, cache.shape[i]))
     end
