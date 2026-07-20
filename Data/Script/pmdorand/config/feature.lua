@@ -2,6 +2,7 @@ local config = require 'pmdorand.config'
 local base = require 'pmdorand.config.base'
 
 ---@class Config.Feature : Config.Base
+---@operator bor(Config.Base): Config.Any
 --- Table extension with enabled and randomization chance fields.
 ---@field enabled Config.Boolean
 ---@field randomization_chance Config.Percentage

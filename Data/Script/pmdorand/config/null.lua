@@ -1,6 +1,7 @@
 local base = require 'pmdorand.config.base'
 
 ---@class Config.Null : Config.Base
+---@operator bor(Config.Base): Config.Any
 local null = base.extend("Config.Null")
 local null_mt = {
     __nyamlType = 'null',

@@ -1,6 +1,7 @@
 local base = require 'pmdorand.config.base'
 
 ---@class Config.String : Config.Base
+---@operator bor(Config.Base): Config.Any
 local str = base.extend("Config.String")
 str.default = ''
 str.illegal_characters = ''

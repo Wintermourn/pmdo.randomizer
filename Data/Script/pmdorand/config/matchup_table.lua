@@ -1,6 +1,7 @@
 local base = require 'pmdorand.config.base'
 
 ---@class Config.MatchupTable : Config.Base
+---@operator bor(Config.Base): Config.Any
 local matchup = base.extend("Config.MatchupTable")
 matchup.shape = {}
 matchup.default = {}

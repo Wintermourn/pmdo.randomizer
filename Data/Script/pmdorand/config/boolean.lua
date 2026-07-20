@@ -1,6 +1,7 @@
 local base = require 'pmdorand.config.base'
 
 ---@class Config.Boolean : Config.Base
+---@operator bor(Config.Base): Config.Any
 --- Automatic type for tables used in config data.
 local bool = base.extend("Config.Boolean")
 bool.default = false
@@ -20,7 +21,7 @@ function bool:validate(t)
 end
 
 function bool:stringify()
-    return ("(Default: %d)"):format( self.default )
+    return ("(Default: %s)"):format( tostring(self.default) )
 end
 
 --- Enable to allow numbers as a valid value. Can be used to set a chance of true or false.
@@ -31,7 +32,7 @@ end
 
 ---@return Config.Boolean
 function bool.new(default)
-    return setmetatable({default = default or false}, bool)
+    return setmetatable({default = default or false, allow_boolable = type(default) == 'number'}, bool)
 end
 
 return bool.new

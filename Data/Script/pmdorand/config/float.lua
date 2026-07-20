@@ -1,6 +1,7 @@
 local base = require 'pmdorand.config.base'
 
 ---@class Config.Floating : Config.Base
+---@operator bor(Config.Base): Config.Any
 --- Automatic type for tables used in config data.
 local float = base.extend("Config.Float")
 float.minimum = 0

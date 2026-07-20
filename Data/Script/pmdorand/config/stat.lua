@@ -1,13 +1,18 @@
 local config = require 'pmdorand.config'
 local base = require 'pmdorand.config.base'
 
+---@enum (key) Config.Stat.RangeMode
 local modes = {
+    --- Final value can span a flat increase or decrease, with the range value being an integer determining the maximum difference.
     raw = 'r',
+    --- Final value can span a percentage increase or decrease, with the range value being a percentage (0.0 - 1.0) determining the maximum difference.
     relative = 'e',
+    --- Final value can span the full range, with the range value overwriting the original value.
     anchor = 'a'
 }
 
 ---@class Config.Stat : Config.Base
+---@operator bor(Config.Base): Config.Any
 local stat = base.extend("Config.Stat")
 stat.structure = {
     minimum = config.integer(0, 0, math.maxinteger, 5),
@@ -69,6 +74,7 @@ function stat.stringify_value(val, colorize)
     )
 end
 
+---@deprecated
 ---@return Config.Stat
 function stat:with_defaults(min, max, range, pull)
     return setmetatable({config = {
@@ -78,9 +84,14 @@ function stat:with_defaults(min, max, range, pull)
     }}, stat)
 end
 
+---@param min int? (default: 0)
+---@param max int? (default: 255)
+---@param range_mode Config.Stat.RangeMode? Determines the range mode. (default: raw)
+---@param range_value number? Controls the range. Depends on the range mode. (default: 30)
+---@param pull number? Controls the pull towards (positive) or away (negative) from the original value. (default: 1.00)
 ---@return Config.Stat
-function stat.new()
-    return setmetatable({config = {minimum = 0, maximum = 255, range = {mode = modes.raw, value = 30}, originalPull = 1.00}}, stat)
+function stat.new(min, max, range_mode, range_value, pull)
+    return setmetatable({config = {minimum = min or 0, maximum = max or 255, range = {mode = range_mode and modes[range_mode] or modes.raw, value = range_value or 30}, originalPull = pull or 1.00}}, stat)
 end
 
 return stat.new

@@ -29,28 +29,23 @@ component.builder()
     :with_dependencies()
     :with_settings {
         hunger_rate = config.feature {
-            leader = config.any(
-                config.integer(80, 0, 1000, 20),
-                config.stat():with_defaults(10, 300, {mode = 'raw', value = 40}, 0.0)
-            ),
-            party = config.any(
-                config.integer(0, 0, 1000, 20),
-                config.stat():with_defaults(0, 300, {mode = 'raw', value = 40}, 0.0)
-            )
+            leader = 
+                config.case('constant', config.integer(80, 0, 1000, 20)) |
+                config.case('weighted', config.stat(10, 300, 'raw', 40, 0.0)),
+            party =
+                config.case('constant', config.integer(0, 0, 1000, 20)) |
+                config.case('weighted', config.stat(0, 300, 'raw', 40, 0.0))
         },
         natural_regeneration = config.feature {
-            out_of_combat = config.any(
-                config.integer(12, -1000, 1000, 20),
-                config.stat():with_defaults(0, 20, {mode = 'relative', value = 0.2}, 1.0)
-            ),
-            in_combat = config.any(
-                config.integer(0, -1000, 1000, 20),
-                config.stat():with_defaults(0, 20, {mode = 'relative', value = 0.2}, 1.0)
-            ),
-            starving = config.any(
-                config.integer(-60, -1000, 1000, 20),
-                config.stat():with_defaults(0, 20, {mode = 'relative', value = 0.2}, 1.0)
-            )
+            out_of_combat =
+                config.case('constant', config.integer(12, -1000, 1000, 20)) |
+                config.case('weighted', config.stat(0, 20, 'relative', 0.2, 1.0)),
+            in_combat =
+                config.case('constant', config.integer(0, -1000, 1000, 20)) |
+                config.case('weighted', config.stat(0, 20, 'relative', 0.2, 1.0)),
+            starving =
+                config.case('constant', config.integer(-60, -1000, 1000, 20)) |
+                config.case('weighted', config.stat(0, 20, 'relative', 0.2, 1.0))
         }
     }
     :on_step(function(id, data, state)

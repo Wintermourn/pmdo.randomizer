@@ -1,6 +1,7 @@
 local base = require 'pmdorand.config.base'
 
 ---@class Config.Table : Config.Base
+---@operator bor(Config.Base): Config.Any
 --- Automatic type for tables used in config data.
 local tbl = base.extend("Config.Table")
 tbl.content = {}

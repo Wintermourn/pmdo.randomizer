@@ -2,6 +2,7 @@ local base = require 'pmdorand.config.base'
 local _set = require 'pmdorand.util.set'
 
 ---@class Config.Set : Config.Base
+---@operator bor(Config.Base): Config.Any
 --- Automatic type for tables used in config data.
 local set = base.extend("Config.Set")
 set.default = {}

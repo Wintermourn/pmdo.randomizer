@@ -2,10 +2,7 @@ local config = require 'pmdorand.config'
 
 return {
     personal = {
-        default_name = config.any(
-            config.null(),
-            config.string('')
-        ),
+        default_name = config.null() | config.string(''),
         always_flush = config.boolean(false),
         export_to_mod = config.boolean(false),
         log_spoilers = config.boolean(true)
