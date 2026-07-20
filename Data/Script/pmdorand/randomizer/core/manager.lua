@@ -1,4 +1,5 @@
 local configuration = require 'pmdorand.randomizer.cache.configurations'
+local state_cache = require 'pmdorand.randomizer.cache.states'
 local random_cache = require 'pmdorand.randomizer.cache.random'
 local pass = require 'pmdorand.randomizer.core.pass'
 local components = require 'pmdorand.randomizer.core.registry' .get 'components'
@@ -76,25 +77,36 @@ end
 
 function public.start(dry_run)
     if manager.is_generating then return false end
+    state_cache.dump()
     random_cache.construct_all()
+    configuration.copy_to_working_path()
+
     local random = random_cache.get_generator()
 
     local config
+    ---@type pmdorand.component[]
     local active_components = {}
     for component_id in configuration.keys() do
         config = configuration.get_master( component_id )
         if config.enabled == true or (type(config.enabled) == 'number' and random:bool(config.enabled)) then
-            active_components[#active_components + 1] = components:get( component_id )
+            local component = components:get( component_id )
+            if component.pre_init_step then
+                component.pre_init_step(state_cache.component(component_id)) 
+            end
+            active_components[#active_components + 1] = component
         end
     end
-
-    configuration.copy_to_working_path()
 
     manager.err = nil
     manager.pass_manager = pass.generate_passes(active_components)
     manager.is_generating = true
     manager.promise = manager.pass_manager:run(configuration.get().personal.log_spoilers, dry_run):on_resolved(function()
         manager.is_generating = false
+        for _, component in ipairs(active_components) do
+            if component.post_gen_step then
+                component.post_gen_step(state_cache.component(component.id)) 
+            end
+        end
         for _, fn in pairs(manager.subscribers.on_success.by_id) do
             fn()
         end

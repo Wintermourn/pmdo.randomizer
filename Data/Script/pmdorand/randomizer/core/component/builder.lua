@@ -37,6 +37,34 @@ function builder:on_step(fn)
     return self
 end
 
+---Provides a function to be fired before any passes are created.
+---@param fn fun(state: pmdorand.state.component)
+function builder:pre_init(fn)
+    self.data.pre_init_step = fn
+    return self
+end
+
+---Provides a function to be fired before the pass running this component has started.
+---@param fn fun(state: pmdorand.state.component)
+function builder:pre_pass(fn)
+    self.data.pre_pass_step = fn
+    return self
+end
+
+---Provides a function to be fired after the pass running this component has finished.
+---@param fn fun(state: pmdorand.state.component)
+function builder:post_pass(fn)
+    self.data.post_pass_step = fn
+    return self
+end
+
+---Provides a function to be fired after the randomization manager has finished all passes of generation.
+---@param fn fun(state: pmdorand.state.component)
+function builder:post_generation(fn)
+    self.data.post_generation = fn
+    return self
+end
+
 ---Provides a spoiler-logging function to the component, run after all changes have been made. Lines have to be written to the file via `file:write(...)`.
 ---@param fn fun(file: file, state: pmdorand.state.component)
 function builder:log_spoilers(fn)
@@ -192,7 +220,12 @@ function builder:build()
         settings = settings,
         step_fn = self.data.step_fn,
         log_spoilers = self.data.spoiler_fn,
-        dependencies = self.data.dependencies or {}
+        dependencies = self.data.dependencies or {},
+
+        pre_init_step = self.data.pre_init_step,
+        pre_pass_step = self.data.pre_pass_step,
+        post_pass_step = self.data.post_pass_step,
+        post_gen_step = self.data.post_generation
     }, component)
 end
 

@@ -1,5 +1,9 @@
 ---@class pmdorand.component
 ---@field step_fn fun(id: string, data: any, state: pmdorand.state.component)
+---@field pre_init_step fun(state: pmdorand.state.component)?
+---@field pre_pass_step fun(state: pmdorand.state.component)?
+---@field post_pass_step fun(state: pmdorand.state.component)?
+---@field post_gen_step fun(state: pmdorand.state.component)?
 local component = {
     ---@type string
     id = '',
@@ -26,7 +30,6 @@ local conditions = {
 ---@field condition pmdorand.enum.dependency_conditions
 ---@field is_hard boolean
 
-local default_format = "\t%s:\t%s\t-> %s"
 ---@param state pmdorand.state.component
 function component.log_spoilers(file, state)
     file:write 'NYI'

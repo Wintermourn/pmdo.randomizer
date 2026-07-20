@@ -23,8 +23,6 @@ local pass_manager = {
 pass_manager.__index = pass_manager
 
 function pass_manager:run(generate_spoilers, dry_run)
-    state_cache.dump()
-
     -- Delete spoilers
     local path = IO.Path.Combine(RogueEssence.PathMod.APP_PATH, require 'pmdorand.util.header'.Path, 'Spoilers')
     if IO.Directory.Exists(path) then
@@ -80,6 +78,9 @@ function pass:run(manager, generate_spoilers, dry_run)
         component_states[component.id] = state
         if generate_spoilers then
             files[component.id] = io.open(IO.Path.Combine(spoiler_path, component.id ..'.txt'), 'w')
+        end
+        if component.pre_pass_step then
+            component.pre_pass_step(state) 
         end
     end
 
@@ -140,6 +141,12 @@ function pass:run(manager, generate_spoilers, dry_run)
                 async.yield()
                 next_yield = __Environment.TickCount64 + 100
             end
+        end
+    end
+
+    for _, component in ipairs(self.components) do
+        if component.post_pass_step then
+            component.post_pass_step(component_states[component.id]) 
         end
     end
 end

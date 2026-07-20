@@ -60,7 +60,7 @@ local public = {}
 
 ---@generic T
 ---@param name string
----@param filter fun(obj: `T`): boolean
+---@param filter fun(obj: T): boolean
 ---@param indexer fun(obj: T): string
 ---@return pmdorand.registry<T>
 function public.create(name, filter, indexer)
