@@ -4,7 +4,7 @@ local base = require 'pmdorand.config.base'
 ---@operator bor(Config.Base): Config.Any
 --- Automatic type for tables used in config data.
 ---@field jump_size int?
-local int = base.extend("Config.Int")
+local int = base.extend("Config.Integer")
 int.minimum = 0
 int.maximum = 50
 int.default = 20

@@ -15,7 +15,7 @@
 ---Wraps a table with enabled and randomization chance values, as well as option key sorting. Good for features that can be turned on or off.
 ---@field feature fun(entries: Config.FromTable, enabled: boolean|number?, randomization_chance: number?, sorted_keys: string[]?): Config.Feature
 ---Accepts decimal numbers.
----@field float fun(default: number?, minimum: number?, maximum: number?, step_size: number?): Config.Floating
+---@field float fun(default: number?, minimum: number?, maximum: number?, step_size: number?): Config.Float
 ---Accepts integer numbers.
 ---@field integer fun(default: integer?, minimum: integer?, maximum: integer?, jump_size: integer?): Config.Integer
 ---Accepts objects with specific, dynamic keys.

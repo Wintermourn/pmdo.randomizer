@@ -3,7 +3,7 @@ local base = require 'pmdorand.config.base'
 ---@class Config.DynamicInteger : Config.Base
 ---@operator bor(Config.Base): Config.Any
 --- Automatic type for tables used in config data.
-local int = base.extend("Config.DynamicInt")
+local int = base.extend("Config.DynamicInteger")
 int.minimum = 0
 int.maximum = 50
 int.default = 20

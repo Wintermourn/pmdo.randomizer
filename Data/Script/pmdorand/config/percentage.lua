@@ -3,7 +3,7 @@ local base = require 'pmdorand.config.base'
 ---@class Config.Percentage : Config.Base
 ---@operator bor(Config.Base): Config.Any
 --- Automatic type for tables used in config data.
-local per = base.extend("Config.Percent")
+local per = base.extend("Config.Percentage")
 per.default = 0.20
 per.step_size = 0.01
 
