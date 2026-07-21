@@ -7,7 +7,7 @@ local this_dir = IO.Path.GetDirectoryName(this_file)
 return {
     load_all = function()
         --require 'pmdorand.randomizer.components.monsters.stats'
-        print 'loading all default components'
+        print 'loading all config handlers'
         
         local req_path
         for file in luanet.each(IO.Directory.GetFiles(this_dir, "*.lua", IO.SearchOption.AllDirectories)) do

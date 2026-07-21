@@ -29,7 +29,7 @@ function float:validate(t, enforce)
 end
 
 function float:stringify()
-    return ("[%f, %f] (Default: %f, Step: %f)"):format( self.minimum, self.maximum, self.default )
+    return ("[%f, %f] (Default: %f, Step: %f)"):format( self.minimum, self.maximum, self.default, self.step_size )
 end
 
 ---@return Config.Integer

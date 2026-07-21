@@ -2,10 +2,9 @@ local base = require 'pmdorand.config.base'
 
 ---@class Config.Boolean : Config.Base
 ---@operator bor(Config.Base): Config.Any
---- Automatic type for tables used in config data.
+---@field default boolean
+---@field allow_boolable boolean
 local bool = base.extend("Config.Boolean")
-bool.default = false
-bool.allow_boolable = false
 
 ---@return boolean
 function bool:get_default_value()

@@ -6,7 +6,9 @@ local text_pool = require 'pmdorand.util.text_pool'
 local play_sound = require 'pmdorand.util.play_sound'
 local __InputType = RogueEssence.FrameInput.InputType
 
-local handlers = require 'pmdorand.ui.configure.handlers'
+local registries = require 'pmdorand.randomizer.core.registry'
+local displays = registries .get 'config.display'
+local setters = registries .get 'config.setter'
 
 local blank = {}
 
@@ -71,7 +73,7 @@ local stat_entries = {
     {
         struct = {'structure', 'value'},
         value = {'range', 'value'},
-        translation = 'pmdorand/settings:stat/mode'
+        translation = 'pmdorand/settings:stat/value'
     },
     {
         struct = {'structure', 'original_pull'},
@@ -165,6 +167,11 @@ local function update_title(state)
     end
 end
 
+local function entry_set_value(entry, value)
+    entry.value = value
+    entry.value_pointer[1][entry.value_pointer[2]] = value
+end
+
 local function update_contents(state)
     local by_index, by_key = {}, {}
 
@@ -178,9 +185,10 @@ local function update_contents(state)
         entry = {
             texts = {
                 {RogueEssence.Text.Strings:ContainsKey(translation_key) and STRINGS:FormatKey(translation_key) or translation_key, 12, (i - 1) * 12},
-                {handlers.get(configs[key].__title).display(configs[key], values[key]), -2, (i - 1) * 12, RogueElements.DirH.Right}
+                {displays:get(configs[key].__title).display(configs[key], values[key]), -2, (i - 1) * 12, RogueElements.DirH.Right}
             },
-            setting = configs[key], value = values[key], keys = key, value_pointer = value_pointers[key], translation_key = translation_key
+            setting = configs[key], value = values[key], keys = key, value_pointer = value_pointers[key], translation_key = translation_key,
+            push = state.entry_push, set = entry_set_value, update_text = state.entry_update_body
         }
         by_index[#by_index + 1] = entry
         by_key[key] = entry
@@ -262,11 +270,11 @@ local function interact_with_hovered(state, method, ...)
     if not hovered then
         return false
     end
-    local handler = handlers.get(hovered.setting.__title)
-    if type(handler[method]) ~= 'function' then
+    local handler = setters:get(hovered.setting.__title)
+    if handler == nil or type(handler[method]) ~= 'function' then
         return false
     end
-    local res = handler[method](state, hovered, ...)
+    local res = handler[method](hovered, ...)
     return res ~= false
 end
 
@@ -397,6 +405,14 @@ function public.open(component, user_settings)
         current_structure = current_structure,
         current_values = current_values
     }
+    state.entry_push = function(entry)
+        push(state, entry.identifier, entry.setting, entry.value, entry.translation_key)
+        update_title(state)
+        update_contents(state)
+        update_body(state)
+    end
+    state.entry_update_body = function() update_body(state) end
+
     push(state, component.id, component.settings, user_settings, 'pmdorand/component:'.. component.id)
 
     local ww, wh = graphics.get_screen_dimensions()

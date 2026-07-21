@@ -6,6 +6,7 @@ local registries = {}
 
 ---@class pmdorand.registry<T>
 ---@field content pmdorand.registry.content<T>
+---@field default T?
 ---@field register fun(self, ...: T): boolean
 ---@field get fun(self, key: string): T
 ---@field contains fun(self, obj: T): boolean
@@ -24,7 +25,7 @@ local registry = {
 registry.__index = registry
 
 function registry:get(key)
-    return self.content.by_key[key]
+    return self.content.by_key[key] or self.default
 end
 
 function registry:contains(obj)
@@ -62,8 +63,9 @@ local public = {}
 ---@param name string
 ---@param filter fun(obj: T): boolean
 ---@param indexer fun(obj: T): string
+---@param default T?
 ---@return pmdorand.registry<T>
-function public.create(name, filter, indexer)
+function public.create(name, filter, indexer, default)
     ---@diagnostic disable-next-line: missing-return-value
     if registries[name] then return end
 
@@ -74,6 +76,7 @@ function public.create(name, filter, indexer)
             by_key = {},
             by_value = {}
         },
+        default = default,
         filter = filter or function() return true end,
         indexer = indexer or function(obj) return obj.id end
     }
@@ -87,6 +90,8 @@ end
 ---@return pmdorand.registry<any>
 ---@overload fun(name: 'providers'): pmdorand.registry<pmdorand.provider<any>>
 ---@overload fun(name: 'components'): pmdorand.registry<pmdorand.component>
+---@overload fun(name: 'config.display'): pmdorand.registry<pmdorand.config.display>
+---@overload fun(name: 'config.setter'): pmdorand.registry<pmdorand.config.setter<any>>
 function public.get(name)
     return registries[name]
 end

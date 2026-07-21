@@ -237,7 +237,7 @@ function builder:build()
     }, component)
 end
 
----@return boolean, pmdorand.component
+---@return pmdorand.component, boolean
 function builder:register()
     local out = self:build()
 
@@ -245,7 +245,7 @@ function builder:register()
     if success and out.settings then
         require 'pmdorand.randomizer.cache.configurations' .publish(self.data.id, out.settings) 
     end
-    return success, out
+    return out, success
 end
 
 ---@return pmdorand.component.builder

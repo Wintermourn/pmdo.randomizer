@@ -69,7 +69,7 @@ function builder:build()
     }, provider)
 end
 
----@return boolean, pmdorand.provider<T>
+---@return pmdorand.provider<T>, boolean
 function builder:register()
     local provider = require 'pmdorand.randomizer.core.provider' .meta.provider
 
@@ -79,7 +79,7 @@ function builder:register()
     }, provider)
 
     local success = require 'pmdorand.randomizer.core.registry' .get 'providers' :register(out)
-    return success, out
+    return out, success
 end
 
 ---@return pmdorand.provider.builder<any>

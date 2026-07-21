@@ -3,6 +3,7 @@ local service = require 'pmdorand.service'
 require 'pmdorand.randomizer.registries' ()
 require 'pmdorand.randomizer.providers' .load_all()
 require 'pmdorand.randomizer.components' .load_all()
+require 'pmdorand.randomizer.config_handlers' .load_all()
 
 local interlace = require 'lib.pmdorand.interlace'
 interlace.dependency_test()
