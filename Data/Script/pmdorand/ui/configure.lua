@@ -406,7 +406,7 @@ function public.open(component, user_settings)
         current_values = current_values
     }
     state.entry_push = function(entry)
-        push(state, entry.identifier, entry.setting, entry.value, entry.translation_key)
+        push(state, entry.keys.value.flat, entry.setting, entry.value, entry.translation_key)
         update_title(state)
         update_contents(state)
         update_body(state)
