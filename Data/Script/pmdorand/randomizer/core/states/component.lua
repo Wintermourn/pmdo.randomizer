@@ -1,7 +1,8 @@
 local configurations = require 'pmdorand.randomizer.cache.configurations'
 
 ---@class pmdorand.state.component
----@field spoilers {[string]: {[string]: {old: any, new: any}}}
+---@field spoilers {[string]: table}
+---@field data {[any]: any}
 local component_state = {
     ---@type string
     identifier = ''
@@ -10,6 +11,7 @@ component_state.__index = component_state
 
 ---@return pmdorand.provider<any>
 function component_state.get_provider( identifier )
+    if type(identifier) == 'table' then identifier = require 'pmdorand.randomizer.core.registry' .get 'components' :get(identifier.identifier) .provider_id end
     return require 'pmdorand.randomizer.core.registry' .get 'providers' :get ( identifier )
 end
 
@@ -49,6 +51,7 @@ function public.new(id)
     local core_config = configurations.get()
     local o = {
         identifier = id,
+        data = {},
         spoilers = core_config.personal.log_spoilers and {}
     }
 

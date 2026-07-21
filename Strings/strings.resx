@@ -129,7 +129,7 @@
   <data name="pmdorand/settings:stat/minimum" xml:space="preserve"><value>Minimum</value></data>
   <data name="pmdorand/settings:stat/maximum" xml:space="preserve"><value>Maximum</value></data>
   <data name="pmdorand/settings:stat/mode" xml:space="preserve"><value>Range Mode</value></data>
-  <data name="pmdorand/settings:stat/range" xml:space="preserve"><value>Maximum Range</value></data>
+  <data name="pmdorand/settings:stat/value" xml:space="preserve"><value>Range Value</value></data>
   <data name="pmdorand/settings:stat/pull" xml:space="preserve"><value>Original Value Pull Strength</value></data>
 
 
@@ -159,6 +159,20 @@
   <data name="pmdorand/settings:monster.typing/options.selection_rules/enforce_different_types" xml:space="preserve"><value>Enforce Different Types</value></data>
   <data name="pmdorand/settings:monster.skills/options.type_matching/options.mismatch_limit" xml:space="preserve"><value>Mismatch Limit</value></data>
   <data name="pmdorand/settings:monster.skills/options.type_matching/options.target_rate" xml:space="preserve"><value>Target Rate</value></data>
+
+  <data name="pmdorand/settings:monster.texts/options.names" xml:space="preserve"><value>Names</value></data>
+  <data name="pmdorand/settings:monster.texts/options.names/options.per_form" xml:space="preserve"><value>Randomize Each Form</value></data>
+  <data name="pmdorand/settings:monster.texts/options.names/options.allow_duplicates" xml:space="preserve"><value>Allow Duplicates</value></data>
+  <data name="pmdorand/settings:monster.texts/options.names/options.include_existing" xml:space="preserve"><value>Include Existing</value></data>
+  <data name="pmdorand/settings:monster.texts/options.names/options.prioritize_custom_names" xml:space="preserve"><value>Prioritize Custom Names</value></data>
+  <data name="pmdorand/settings:monster.texts/options.species" xml:space="preserve"><value>Species</value></data>
+  <data name="pmdorand/settings:monster.texts/options.species/options.allow_duplicates" xml:space="preserve"><value>Allow Duplicates</value></data>
+  <data name="pmdorand/settings:monster.texts/options.species/options.include_existing" xml:space="preserve"><value>Include Existing</value></data>
+  <data name="pmdorand/settings:monster.texts/options.species/options.prioritize_custom_names" xml:space="preserve"><value>Prioritize Custom Names</value></data>
+  <data name="pmdorand/settings:monster.texts/options.titles" xml:space="preserve"><value>Titles</value></data>
+  <data name="pmdorand/settings:monster.texts/options.titles/options.allow_duplicates" xml:space="preserve"><value>Allow Duplicates</value></data>
+  <data name="pmdorand/settings:monster.texts/options.titles/options.include_existing" xml:space="preserve"><value>Include Existing</value></data>
+  <data name="pmdorand/settings:monster.texts/options.titles/options.prioritize_custom_names" xml:space="preserve"><value>Prioritize Custom Names</value></data>
 
   <data name="pmdorand/settings:universal.type_matchups/options.symmetrical" xml:space="preserve"><value>Symmetrical Matchups</value></data>
 </root>

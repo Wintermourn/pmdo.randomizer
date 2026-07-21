@@ -38,6 +38,9 @@ end
 ---@param true_chance number (0..1)
 ---@return boolean
 function random:bool(true_chance)
+    if type(true_chance) == 'boolean' then
+        return true_chance 
+    end
     if true_chance >= 1 then return true end
     if true_chance <= 0 then return false end
     return self.generator:random() < true_chance
@@ -155,13 +158,6 @@ function random:origin_weighted(minimum, maximum, origin, strength)
 
     scaled = curved * max_range
     return is_positive and ( origin + scaled ) or ( origin - scaled )
-end
-
----@param options {[number]: number} {[value]: weight}
----@param interpolation boolean|fun(low_bound: number, low_weight: number, high_bound: number, high_weight: number, between_step: number): number
----@return number|any?
-function random:weighted(options, interpolation)
-    if type(options) ~= 'table' then return options end
 end
 
 local public = {}

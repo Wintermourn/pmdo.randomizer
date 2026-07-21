@@ -70,6 +70,9 @@ function pass:run(manager, generate_spoilers, dry_run)
         end
     end
 
+    manager.state = string.format("Pass %d [%s]: Starting", self.pass_id, self.provider.id)
+    async.yield()
+
     local component_states = {}
     ---@type {[string]: file}
     local files = {}
@@ -143,6 +146,8 @@ function pass:run(manager, generate_spoilers, dry_run)
             end
         end
     end
+
+    manager.state = string.format("Pass %d [%s]: Finishing", self.pass_id, self.provider.id)
 
     for _, component in ipairs(self.components) do
         if component.post_pass_step then
