@@ -63,11 +63,16 @@ local keywords = {
     ['false'] = false,
 }
 
+---@class nyaml.full : nyaml
+---@field parse_string fun(input: string, tag_handlers: {[string]: fun(input: any): any}): table?, string|table
+---@field parse_file fun(input: string, tag_handlers: {[string]: fun(input: any): any}): table?, string|table
+---@field serialize fun(...: nyaml.to_yaml): string
+
 local mt = {}
 ---@class nyaml
----@overload fun(path: string, ...: string)
+---@overload fun(path: string, ...: string): nyaml.full
 local out = setmetatable({
-    __VERSION = 1.3,
+    __VERSION = 1.4,
     values = {
         null = null_value
     },
@@ -301,7 +306,8 @@ function mt.__call( self, path, ... )
                 end
             else
                 node = __Activator.CreateInstance(type_YamlMappingNode)
-                if type(mtt.__nyamlKeyOrder) == 'table' then
+                local ty = type(mtt.__nyamlKeyOrder)
+                if ty == 'table' then
                     local keys = {}
                     for k in pairs(v) do
                         keys[k] = true
@@ -313,6 +319,15 @@ function mt.__call( self, path, ... )
                         end
                     end
                     for k in pairs(keys) do
+                        node:Add(objectify_node(k, visited, anchor_state), objectify_node(v[k], visited, anchor_state))
+                    end
+                elseif ty == 'function' then
+                    local keys = {}
+                    for k in pairs(v) do
+                        keys[#keys + 1] = k
+                    end
+                    table.sort(keys, mtt.__nyamlKeyOrder)
+                    for _, k in ipairs(keys) do
                         node:Add(objectify_node(k, visited, anchor_state), objectify_node(v[k], visited, anchor_state))
                     end
                 else

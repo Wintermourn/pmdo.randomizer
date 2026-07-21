@@ -22,13 +22,19 @@ do
     illegalPattern = illegalPattern .. ']'
 end
 
+local components_mt = {
+    __nyamlKeyOrder = function(a, b)
+        return tostring(a) < tostring(b)
+    end
+}
+
 local cache = {
     core = {
         public = {},
         personal = {}
     },
     ---@type {[string]: Config.Feature}
-    components = {},
+    components = setmetatable({}, components_mt),
     structures = {
         core = require 'pmdorand.randomizer.core.settings' .structure,
         components = {}
