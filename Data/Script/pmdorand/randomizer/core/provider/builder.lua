@@ -16,15 +16,17 @@ do
         methods = {}
     }
 
+    local disown_to_builder = disowner.new('builder', function(wrapped, unwrapped, fn, ...)
+        unwrapped.data.methods = wrapped.methods
+        return fn(unwrapped, ...)
+    end)
+
     function method_builder:__index(idx)
         local candidate = rawget(self.builder, idx) or method_builder[idx]
         if candidate then return candidate end
         candidate = builder[idx]
         if type(candidate) == 'function' then
-            return disowner(self.builder, function(s, ...)
-                self.builder.data.methods = self.methods
-                return candidate(s, ...)
-            end)
+            return disowner.wrap(disown_to_builder, candidate)
         end
     end
 

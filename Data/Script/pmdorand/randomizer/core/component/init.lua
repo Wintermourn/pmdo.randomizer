@@ -7,6 +7,8 @@
 local component = {
     ---@type string
     id = '',
+    ---@type boolean
+    not_implemented = false,
     ---@type string
     provider_id = '',
     ---@type string?

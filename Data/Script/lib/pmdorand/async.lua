@@ -95,7 +95,7 @@ end
 
 ---@param fn async fun(...)
 function _promise:on_resolved(fn)
-    if self.finished and self.resolved then fn(unpack(self.return_values or blank)) end
+    if self.finished and self.resolved then fn(unpack(self.return_values or blank)); return end
     local on_res = self.subscribers.on_resolved
     on_res[#on_res + 1] = fn
     return self
@@ -103,7 +103,7 @@ end
 
 ---@param fn async fun(...)
 function _promise:on_rejected(fn)
-    if self.finished and not self.resolved then fn(unpack(self.return_values or blank)) end
+    if self.finished and not self.resolved then fn(unpack(self.return_values or blank)); return end
     local on_res = self.subscribers.on_rejected
     on_res[#on_res + 1] = fn
     return self
@@ -171,7 +171,7 @@ function public.wait_for(arg)
                 return unpack(args) 
             end
         end
-    elseif type(arg) == 'table' and getmetatable(table) == _promise then
+    elseif type(arg) == 'table' and getmetatable(arg) == _promise then
         if arg.finished then
             if arg.resolved then
                 return true, unpack(arg.return_values or blank)
@@ -211,13 +211,7 @@ end
 function public.cancel(id, ...)
     local target = async.tasks[id]
     if target then
-        async.tasks[id] = nil
-        if #target.blocking > 0 then
-            for _i,k in ipairs(target.blocking) do
-                k.continue_arguments = {...}
-                k.status = 'waiting'
-            end 
-        end
+        target:cancel(...)
     end
 end
 
@@ -255,8 +249,8 @@ end
 function public.promise()
     return setmetatable({
         finished = false,
-        success = false,
-        return_value = nil,
+        resolved = false,
+        return_values = nil,
         subscribers = {
             on_resolved = {},
             on_rejected = {}

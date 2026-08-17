@@ -1,5 +1,13 @@
 ---@diagnostic disable: unnecessary-if
-local TAXONVERSION = 0.52
+local TAXONVERSION = 0.54
+
+--[[
+    todo: rewrite to make further optimizations:
+        - bitsets/fields: store tags as binary bits if a lot of sparse entries
+        - deltas/differences: store tags as ordered differences if not a lot of close entries (e.g. [1,2,3,6,12] -> 0,[1,1,3,6])
+        - use the current system as a fallback
+        - compress monster forms: store forms as a single entry with the monster rather than as individual entries (e.g. `[6]wooper[2]` instead of `[8]wooper/0`, `[8]wooper/1`)
+]]
 
 local IO = luanet.namespace 'System.IO'
 
@@ -59,10 +67,10 @@ local data_categories = {
 ---@class Taxon.Carcass
 local carcass, bubbleup = {}, {}
 if taxon then
+    if taxon._VERSION < 0.4 then taxon.scan_methods = {} end
     taxon._VERSION = TAXONVERSION
     taxon.carcass = carcass
     taxon.bubbleup = bubbleup
-    if taxon._VERSION < 0.4 then taxon.scan_methods = {} end
 else
     first_init = true
     taxon = {
@@ -761,14 +769,22 @@ local function load_tag_files(path, base_path, tag_cache, type, scan_cache)
                     if token.Type == __JTokenType.String then
                         v = token:ToString()
                         if o.by_value[v] then
-                            table.remove(o.by_index, o.by_value[v])
                             o.by_value[v] = nil
-                        o.removed_values[v] = true
+                            o.removed_values[v] = true
                         end
                     else
                         print("invalid token in values array")
                     end
                 end
+
+                local filtered_index = {}
+                for _, val in ipairs(o.by_index) do
+                    if not o.removed_values[val] then
+                        table.insert(filtered_index, val)
+                        o.by_value[val] = #filtered_index
+                    end
+                end
+                o.by_index = filtered_index
             end
             
             local tests = json['scans']
@@ -984,19 +1000,26 @@ function carcass.rebuild(force)
                 end
                 cacheBloq.tags[i] = {entries = entries, is_default_tag = k.is_default_tag}
             end
-            local keySize = math.ceil(math.ceil(math.log(#cacheBloq.keys + 1, 2))/8)
-            local function byteify(n, size)
-                local bytes = __Array.CreateInstance(type_Byte, size)
-                for i=0, size-1 do
-                    bytes[i] = n % 256--bytes:SetValue(n % 256, i)
+            local keySize = 1
+            local maxKeys = #cacheBloq.keys
+            do
+                local limit = 256
+                while maxKeys > limit do
+                    keySize = keySize + 1
+                    limit = limit * 256
+                end
+            end
+
+            local function write_int(stream, n, size)
+                for i=1, size do
+                    stream:WriteByte(n % 256)
                     n = math.floor(n / 256)
                 end
-                return bytes
             end
-            local stream = IO.MemoryStream()
+            local stream = IO.FileStream(cachePath, IO.FileMode.Create, IO.FileAccess.Write)
             stream:Write(catHash, 0, catHash.Length)
             stream:WriteByte(keySize)
-            stream:Write(byteify(#cacheBloq.keys, keySize), 0, keySize)
+            write_int(stream, maxKeys, keySize)
             for _,k in ipairs(cacheBloq.keys) do
                 stream:WriteByte(#k)
                 stream:Write(__Encoding.UTF8:GetBytes(k), 0, #k)
@@ -1006,12 +1029,14 @@ function carcass.rebuild(force)
                 i = tostring(i)
                 stream:WriteByte(#i) stream:Write(__Encoding.UTF8:GetBytes(i), 0, #i)
                 stream:WriteByte(k.is_default_tag and 1 or 0)
-                stream:Write(byteify(#k.entries, keySize), 0, keySize)
+                write_int(stream, #k.entries, keySize)
                 for _, idx in ipairs(k.entries) do
-                    stream:Write(byteify(idx, keySize), 0, keySize)
+                    write_int(stream, idx, keySize)
                 end
             end
-            IO.File.WriteAllBytes(cachePath, stream:ToArray())
+            stream:Flush()
+            stream:Close()
+            stream:Dispose()
         end
 
         pendingScans = {}

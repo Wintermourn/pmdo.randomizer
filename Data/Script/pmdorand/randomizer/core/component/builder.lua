@@ -10,6 +10,11 @@ function builder:with_id( identifier )
     return self
 end
 
+function builder:mark_not_implemented()
+    self.data.nyi = true
+    return self
+end
+
 ---Controls whether the component defaults to being randomized, or not, or having a chance to be.
 ---@param enabledness boolean|number
 function builder:default_enabledness( enabledness )
@@ -97,15 +102,17 @@ do
         dependencies = {}
     }
 
+    local disown_to_builder = disowner.new('builder', function(wrapped, unwrapped, fn, ...)
+        unwrapped.data.dependencies = wrapped.dependencies
+        return fn(unwrapped, ...)
+    end)
+
     function dependencies_builder:__index(idx)
         local candidate = rawget(self.builder, idx) or dependencies_builder[idx]
         if candidate then return candidate end
         candidate = builder[idx]
         if type(candidate) == 'function' then
-            return disowner(self.builder, function(s, ...)
-                self.builder.data.dependencies = self.dependencies
-                return candidate(s, ...)
-            end)
+            return disowner.wrap(disown_to_builder, candidate)
         end
     end
 
@@ -127,24 +134,35 @@ do
             is_hard = true
         }
 
+        local disown_to_dependency_builder = disowner.new('builder', function(wrapped, unwrapped, fn, ...)
+            unwrapped.dependencies[wrapped.key] = {
+                key = wrapped.key,
+                condition = wrapped.condition,
+                is_hard = wrapped.is_hard
+            }
+            return fn(unwrapped, ...)
+        end)
+        local disown_to_builder = disowner.new({'builder', 'builder'}, function(wrapped, unwrapped, fn, ...)
+            wrapped.builder.dependencies[wrapped.key] = {
+                key = wrapped.key,
+                condition = wrapped.condition,
+                is_hard = wrapped.is_hard
+            }
+            unwrapped.data.dependencies = wrapped.builder.dependencies
+            return fn(unwrapped, ...)
+        end)
+
         ---@return any
         function dependency_builder:__index(idx)
             local candidate = rawget(self.builder, idx) or dependency_builder[idx]
             if candidate then return candidate end
             candidate = dependencies_builder[idx]
             if type(candidate) == 'function' then
-                return disowner(self.builder, function(s, ...)
-                    self.builder.dependencies[self.key] = {key = self.key, condition = self.condition, is_hard = self.is_hard}
-                    return candidate(s, ...)
-                end)
+                return disowner.wrap(disown_to_dependency_builder, candidate)
             end
             candidate = builder[idx]
             if type(candidate) == 'function' then
-                return disowner(self.builder.builder, function(s, ...)
-                    self.builder.dependencies[self.key] = {key = self.key, condition = self.condition, is_hard = self.is_hard}
-                    self.builder.builder.data.dependencies = self.builder.dependencies
-                    return candidate(s, ...)
-                end)
+                return disowner.wrap(disown_to_builder, candidate)
             end
         end
 
@@ -223,6 +241,7 @@ function builder:build()
 
     return setmetatable({
         id = self.data.id,
+        not_implemented = self.data.nyi or false,
         provider_id = self.data.provider_id,
         associated_generator = self.data.associated_generator,
         settings = settings,
