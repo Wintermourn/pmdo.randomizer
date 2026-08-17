@@ -6,14 +6,14 @@ function _conf:__index(key)
     return rawget(self, key) or rawget(_conf, key)
 end
 
-function _conf:get_default_value() return {} end
-
 --- Requires that validation enforce things like minimum and maximum values.
 --- <br><b>It is recommended to only use this if out-of-bounds values cause errors.</b>
 function _conf:always_enforce_limits()
     self.enforce_limits = true
     return self
 end
+
+function _conf:get_default_value() return nil end
 
 ---@param enforce_limits boolean?
 ---@return boolean, string?

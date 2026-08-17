@@ -3,6 +3,7 @@ local config = require 'pmdorand.config'
 local math_util = require 'pmdorand.util.math'
 
 component.builder()
+    :mark_not_implemented()
     :with_id 'monster.skills'
     :associate_random 'monster.skills'
     :default_enabledness ( false )
@@ -18,7 +19,7 @@ component.builder()
                 if rounded_val > 0 then
                     return STRINGS:FormatKey('pmdorand/config:stab_towards'):format(rounded_val)
                 elseif rounded_val < 0 then
-                    return STRINGS:FormatKey('pmdorand/config:stab_against'):format(rounded_val)
+                    return STRINGS:FormatKey('pmdorand/config:stab_against'):format(-rounded_val)
                 end
                 return '0%'
             end

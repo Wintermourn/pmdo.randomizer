@@ -1,7 +1,7 @@
 local public = {}
 
 function public.show()
-    _MENU:AddMenu(require 'pmdorand.ui.root' .create(), false)
+    require 'pmdorand.ui.root' .open()
 end
 
 return public

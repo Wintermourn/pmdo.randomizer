@@ -7,7 +7,7 @@ local modes = {
     raw = 'r',
     --- Final value can span a percentage increase or decrease, with the range value being a percentage (0.0 - 1.0) determining the maximum difference.
     relative = 'e',
-    --- Final value can span the full range, with the range value overwriting the original value.
+    --- Final value can span the full range, with the range value overwriting the original value during randomization.
     anchor = 'a'
 }
 
@@ -17,7 +17,7 @@ local stat = base.extend("Config.Stat")
 stat.structure = {
     minimum = config.integer(0, 0, math.maxinteger, 5),
     maximum = config.integer(0, 0, math.maxinteger, 5),
-    mode = config.option('r', {'r', 'e', 'a'}),
+    mode = config.enum('r', {'r', 'e', 'a'}),
     value = config.integer(0, 0, math.maxinteger, 5),
     original_pull = config.float(0, -10, 10)
 }

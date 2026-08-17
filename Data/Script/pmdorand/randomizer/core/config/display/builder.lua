@@ -12,7 +12,7 @@ end
 
 ---### Function Returns
 ---Output should be a string, a string that's returned later (via `Async.Promise`), or nothing.
----@param fn fun(structure: T, value: any): (string|Async.Promise?)
+---@param fn fun(structure: T, value: any, entry: pmdorand.config.entry<T>?): string?
 ---@return self
 function builder:with_display( fn )
     self.data.display = fn

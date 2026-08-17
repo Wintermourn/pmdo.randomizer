@@ -79,6 +79,7 @@ function public.start(dry_run)
     if manager.is_generating then return false end
     state_cache.dump()
     random_cache.construct_all()
+    configuration.save_memory()
     configuration.copy_to_working_path()
 
     local random = random_cache.get_generator()

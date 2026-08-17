@@ -10,7 +10,7 @@ return setter.builder() --[[@as ConfigSetterBuilder<Config.Boolean>]]
         promise:on_resolved(function(out_value)
             entry:set(out_value)
             if #entry.texts > 1 then
-                entry.texts[2][1] = displays:get 'Config.Boolean' .display(entry.setting, entry.value)
+                entry.texts[2][1] = displays:get 'Config.Boolean' .display(entry.setting, entry.value, entry)
             end
             entry:update_text()
         end)
@@ -58,7 +58,7 @@ return setter.builder() --[[@as ConfigSetterBuilder<Config.Boolean>]]
             entry:set(out)
         end
         if #entry.texts > 1 then
-            entry.texts[2][1] = displays:get 'Config.Boolean' .display(entry.setting, entry.value)
+            entry.texts[2][1] = displays:get 'Config.Boolean' .display(entry.setting, entry.value, entry)
         end
         return true
     end)

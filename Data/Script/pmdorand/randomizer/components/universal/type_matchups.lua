@@ -5,6 +5,7 @@ local math_util = require 'pmdorand.util.math'
 local __ElementTableState = luanet.import_type 'PMDC.Dungeon.ElementTableState'
 
 component.builder()
+    :mark_not_implemented()
     :with_id 'universal.type_matchups'
     :associate_random 'universal.type_matchups'
     :default_enabledness ( false )

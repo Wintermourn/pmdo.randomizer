@@ -3,7 +3,7 @@ local displays = require 'pmdorand.randomizer.core.registry' .get 'config.displa
 
 return display.builder() --[[@as ConfigDisplayBuilder<Config.Feature>]]
     :with_title 'Config.Feature'
-    :with_display(function(structure, value)
-        return displays:get 'Config.Boolean' .display(structure.enabled, value.enabled) ..' [color=#aaaaaa]>'
+    :with_display(function(structure, value, entry)
+        return displays:get 'Config.Boolean' .display(structure.enabled, value.enabled, entry) ..' [color=#aaaaaa]>'
     end)
     :register()

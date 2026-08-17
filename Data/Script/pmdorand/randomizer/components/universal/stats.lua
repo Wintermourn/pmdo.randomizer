@@ -1,9 +1,22 @@
 local component = require 'pmdorand.randomizer.core.component'
 local config = require 'pmdorand.config'
-local math_util = require 'pmdorand.util.math'
 local enumerate = require 'pmdorand.util.enumerate'
 
 local steps = {
+    ['PMDC.Dungeon.NaturalHungerEvent'] = function(id, value, state, conf, random)
+        if conf.hunger_rate.enabled and random:bool(conf.hunger_rate.randomization_chance) then
+            for _i, k in ipairs {
+                {conf.hunger_rate.options.leader, "LeaderHungerRate"},
+                {conf.hunger_rate.options.party, "PartyHungerRate"}
+            } do
+                if type(k[1]) == 'number' then
+                    value[k[2]] = k[1]
+                else
+                    -- todo
+                end
+            end
+        end
+    end,
     ['PMDC.Dungeon.NaturalPercentRegenEvent'] = function(id, value, state, conf, random)
         if conf.natural_regeneration.enabled and random:bool(conf.natural_regeneration.randomization_chance) then
             for _i, k in ipairs {
@@ -51,7 +64,6 @@ component.builder()
     :on_step(function(id, data, state)
         local conf, random = state:get_config(), state:get_random()
 
-        --print(data.OnTurnEnds:GetEnumerator())
         for entry in enumerate.enumerate_ienumerableable(data.OnTurnEnds) do
             print(entry.Key, entry.Value)
             local step = steps[entry.Value:GetType().FullName]

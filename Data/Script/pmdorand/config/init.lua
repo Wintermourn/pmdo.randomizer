@@ -11,7 +11,12 @@
 ---@field case fun(key: string, value: Config.Base): Config.Case
 ---Wraps another config value, changing how it is displayed in the in-game editor.
 ---@field custom_display fun(setting: Config.Base, display_method: fun(value: any): string): Config.CustomDisplay
+---Similar to `custom_display`, except that it controls documentation text rather than value displays.<br>
+---`documentation_method` can be a `string`, where the text is a translation key, or a `function`, where the output is two strings, Name and Body text.
+---@field custom_documentation fun(setting: Config.Base, documentation_method: string|(fun(structure: Config.Base, value: any, entry: pmdorand.config.entry<Config.Base>): (string, string))): Config.CustomDocumentation
 ---@field dynamic_int fun(default: integer?, minimum: integer?, maximum: integer?): Config.DynamicInteger
+---Only accepts specified values. The default value should match an entry in the list.
+---@field enum fun(default: any, choices: any[]): Config.Enum
 ---Wraps a table with enabled and randomization chance values, as well as option key sorting. Good for features that can be turned on or off.
 ---@field feature fun(entries: Config.FromTable, enabled: boolean|number?, randomization_chance: number?, sorted_keys: string[]?): Config.Feature
 ---Accepts decimal numbers.
@@ -22,8 +27,6 @@
 ---@field matchup_table fun(keying_function: (fun(key: string): boolean)?): Config.MatchupTable
 ---Only accepts null. Useful for placeholding.
 ---@field null fun(): Config.Null
----Only accepts specified values. The default value should match an entry in the list.
----@field option fun(default: any, choices: any[]): Config.Option
 ---Accepts numbers between 0.0 (0%) and 1.0 (100%).
 ---@field percentage fun(default: number?, step_size: number?): Config.Percentage
 ---Holds data for weighted stat randomization.

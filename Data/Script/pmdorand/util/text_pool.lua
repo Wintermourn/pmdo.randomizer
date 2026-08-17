@@ -25,6 +25,7 @@ return {
             end 
             return
         end
+        local elements = menu.Elements
         local new_elements = #new_text - #pool
         local starting_new_element = #pool + 1
         local element, output
@@ -36,11 +37,11 @@ return {
                 output = handle_aligned_coordinates(new_text[real_index], menu_bounds.Width, menu_bounds.Height, right, bottom)
                 element = create_text(output[1], (output[2] or 8) + left, (output[3] or 0) + top, output[4] or RogueElements.DirH.Left, output[5] or RogueElements.DirV.Up)
                 pool[real_index] = element
-                menu.Elements:Add(element)
+                elements:Add(element)
             end
         else
             for i = #new_text + 1, #pool do
-                pool[i]:SetText ''
+                elements:Remove(pool[i])
             end
         end
         local offset = new_elements > 0 and new_elements or 0
@@ -52,7 +53,14 @@ return {
                 element.Loc = #output > 1 and RogueElements.Loc(output[2] and (output[2] + left) or element.Loc.X, output[3] and (output[3] + top) or element.Loc.Y) or element.Loc
                 element.AlignH = output[4] or RogueElements.DirH.Left
                 element.AlignV = output[5] or RogueElements.DirV.Up
+                if not elements:Contains(element) then elements:Add(element) end
             end
+        end
+    end,
+    hide_all = function(menu, pool)
+        local elements = menu.Elements
+        for i, k in ipairs(pool) do
+            elements:Remove(k)
         end
     end
 }

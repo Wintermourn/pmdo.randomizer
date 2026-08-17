@@ -59,6 +59,8 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="pmdorand:topmenu" xml:space="preserve"><value>Randomizer</value></data>
+  <data name="pmdorand:nyi" xml:space="preserve"><value>[color=#999999]Not Yet Implemented</value></data>
+  <data name="pmdorand:nyi.short" xml:space="preserve"><value>[color=#999999](NYI)</value></data>
 
   <data name="pmdorand:randomize" xml:space="preserve"><value>Generate</value></data>
   <data name="pmdorand:configurations.browse" xml:space="preserve"><value>Browse Configurations</value></data>
@@ -72,10 +74,20 @@
   <data name="pmdorand:first" xml:space="preserve"><value>[color=#ffbb90]First</value></data>
   <data name="pmdorand:second" xml:space="preserve"><value>[color=#ffbb90]Second</value></data>
 
+  <data name="pmdorand/state:idle" xml:space="preserve"><value>Idle</value></data>
+  <data name="pmdorand/state:generating" xml:space="preserve"><value>Generating</value></data>
+  <data name="pmdorand/state:finished" xml:space="preserve"><value>Finished</value></data>
+  <data name="pmdorand/state:failed" xml:space="preserve"><value>Failed</value></data>
+
+  <data name="pmdorand/status:idle" xml:space="preserve"><value>Not Generating</value></data>
+  <data name="pmdorand/status:finished" xml:space="preserve"><value>Done!</value></data>
+  <data name="pmdorand/status:failed" xml:space="preserve"><value>Check logs!</value></data>
+
   <data name="pmdorand:tab.number" xml:space="preserve"><value>%s [color=#999999](%d/%d)</value></data>
-  <data name="pmdorand:tab.status" xml:space="preserve"><value>Overview</value></data>
-  <data name="pmdorand:tab.settings" xml:space="preserve"><value>Settings</value></data>
-  <data name="pmdorand:tab.components" xml:space="preserve"><value>Components</value></data>
+  <data name="pmdorand:tab/status" xml:space="preserve"><value>Overview</value></data>
+  <data name="pmdorand:tab/archipelago" xml:space="preserve"><value>[color=#ddffee]Archipelago</value></data>
+  <data name="pmdorand:tab/settings" xml:space="preserve"><value>Settings</value></data>
+  <data name="pmdorand:tab/components" xml:space="preserve"><value>Components</value></data>
 
   <data name="pmdorand:stats.components.title" xml:space="preserve"><value>Components</value></data>
   <data name="pmdorand:stats.components.count" xml:space="preserve"><value>%d [color=#999999](%d Enabled)</value></data>
@@ -83,6 +95,85 @@
   <data name="pmdorand:stats.providers.count" xml:space="preserve"><value>%d Providers</value></data>
   <data name="pmdorand:stats.enabled.count" xml:space="preserve"><value>%d Enabled</value></data>
   <data name="pmdorand:stats.enabled.count.span" xml:space="preserve"><value>%d-%d Enabled</value></data>
+
+
+  <data name="pmdorand:documentation.setting" xml:space="preserve"><value>Setting</value></data>
+  <data name="pmdorand:documentation.config" xml:space="preserve"><value>Config Type</value></data>
+
+  <data name="pmdorand/documentation:none">
+    <value>
+      [color=#999999]No documentation is available for this setting.
+    </value>
+  </data>
+
+  <data name="pmdorand:config.bool" xml:space="preserve"><value>Boolean</value></data>
+  <data name="pmdorand/documentation:config.bool">
+    <value>
+      Represents a boolean value, on or off. Often used to enable or disable certain features.
+      Some boolean values support enabledness and can be set to "Dynamic" when selected. This makes the randomizer roll whether it is enabled or disabled for the entire generation.
+    </value>
+  </data>
+
+  <data name="pmdorand:config.integer" xml:space="preserve"><value>Integer</value></data>
+  <data name="pmdorand/documentation:config.integer">
+    <value>
+      - Default: %d
+      - Range: [%d - %d]
+      Represents a whole number. Values can be anything within a specified range.
+    </value>
+  </data>
+
+  <data name="pmdorand:config.percentage" xml:space="preserve"><value>Percentage</value></data>
+  <data name="pmdorand/documentation:config.percentage">
+    <value>
+      - Default: %d
+      Represents a percentage, typically from 0 - 100%%. Typically used to roll probabilities or decide thresholds.
+    </value>
+  </data>
+
+  <data name="pmdorand/documentation:config.table">
+    <value>
+      This option contains other options within it. Select it to view them!
+    </value>
+  </data>
+
+  <data name="pmdorand:config.feature" xml:space="preserve"><value>Feature</value></data>
+  <data name="pmdorand/documentation:config.feature">
+    <value>
+      A mix between boolean and table used to control randomizer features. Select it to view more options!
+    </value>
+  </data>
+
+  <data name="pmdorand:config.any" xml:space="preserve"><value>Any</value></data>
+  <data name="pmdorand/documentation:config.any">
+    <value>
+      This option can be one of several types. Select it to control which one it is!
+      Each type is detailed on the following pages.
+    </value>
+  </data>
+
+  <data name="pmdorand:config.variant" xml:space="preserve"><value>Variant</value></data>
+  <data name="pmdorand/documentation:config.variant">
+    <value>
+      This option can be one of several types, specified by a name. Select it to control which one it is!
+      Each type, and the name it corresponds to, is detailed on the following pages.
+    </value>
+  </data>
+
+  <data name="pmdorand:config.stat" xml:space="preserve"><value>Stat</value></data>
+  <data name="pmdorand/documentation:config.stat">
+    <value>
+      Handles complex randomization of a number, supporting weighting towards or away from its original value.
+    </value>
+  </data>
+
+  <data name="pmdorand:config.enum" xml:space="preserve"><value>Enum</value></data>
+  <data name="pmdorand/documentation:config.enum">
+    <value>
+      An option limited to one of several exact values. Press left and right on it to decide which one it should be!
+      What each value means is detailed on the following pages.
+    </value>
+  </data>
 
   <data name="pmdorand/provider:monsters" xml:space="preserve"><value>Pokémon</value></data>
   <data name="pmdorand/provider:items" xml:space="preserve"><value>Items</value></data>
@@ -129,8 +220,45 @@
   <data name="pmdorand/settings:stat/minimum" xml:space="preserve"><value>Minimum</value></data>
   <data name="pmdorand/settings:stat/maximum" xml:space="preserve"><value>Maximum</value></data>
   <data name="pmdorand/settings:stat/mode" xml:space="preserve"><value>Range Mode</value></data>
+  <data name="pmdorand/settings:stat/mode=r" xml:space="preserve"><value>Raw</value></data>
+  <data name="pmdorand/settings:stat/mode=e" xml:space="preserve"><value>Relative</value></data>
+  <data name="pmdorand/settings:stat/mode=a" xml:space="preserve"><value>Anchor</value></data>
   <data name="pmdorand/settings:stat/value" xml:space="preserve"><value>Range Value</value></data>
   <data name="pmdorand/settings:stat/pull" xml:space="preserve"><value>Original Value Pull Strength</value></data>
+
+  <data name="pmdorand/settings:type/no_effect" xml:space="preserve"><value>[color=#aaaaaa]Highly Ineffective / Immune</value></data>
+  <data name="pmdorand/settings:type/not_effective" xml:space="preserve"><value>[color=#ffdddd]Ineffective</value></data>
+  <data name="pmdorand/settings:type/neutral" xml:space="preserve"><value>Neutral</value></data>
+  <data name="pmdorand/settings:type/super_effective" xml:space="preserve"><value>[color=#ddeeff]Highly Effective</value></data>
+
+  <data name="pmdorand/documentation:feature/enabled" xml:space="preserve"><value>
+    Decides whether the feature is enabled or not for the entire generation.
+  </value></data>
+
+  <data name="pmdorand/documentation:feature/randomization_chance" xml:space="preserve"><value>
+    Controls the odds of this feature randomizing for each entry (item, move, ...). If this is 100%, it always randomizes. If 0%, it never does.
+  </value></data>
+
+  <data name="pmdorand/documentation:stat/mode=r">
+    <value>
+      The randomized value must be within an exact distance from the original value.
+      For example, if the original value is 50 and the Range Value is 25, the randomized value is limited to between 25 and 75.
+    </value>
+  </data>
+
+  <data name="pmdorand/documentation:stat/mode=e">
+    <value>
+      The randomized value must be within a percentage-based distance from the original value.
+      For example, if the original value is 50 and the Range Value is 100, the randomized value is limited to between 0 and 100.
+    </value>
+  </data>
+
+  <data name="pmdorand/documentation:stat/mode=a">
+    <value>
+      The randomized value can be anything between the minimum and maximum limits, but the original value is replaced by the range.
+      For example, if the Range Value is set to 25, and the range is [0, 255], the randomized value can be anything between 0 and 255, but pulled towards/away from 25.
+    </value>
+  </data>
 
 
 
@@ -154,11 +282,24 @@
 
   <data name="pmdorand/settings:monster.typing/options.dual_type_chance" xml:space="preserve"><value>Dual Type Chance</value></data>
   <data name="pmdorand/settings:monster.typing/options.retained_type" xml:space="preserve"><value>Retained Type</value></data>
+  <data name="pmdorand/settings:monster.typing/options.retained_type=false" xml:space="preserve"><value>[color=#ff9090]Disabled</value></data>
+  <data name="pmdorand/settings:monster.typing/options.retained_type=true" xml:space="preserve"><value>[color=#90baff]Both</value></data>
+  <data name="pmdorand/settings:monster.typing/options.retained_type=1" xml:space="preserve"><value>[color=#ffbb90]First</value></data>
+  <data name="pmdorand/settings:monster.typing/options.retained_type=2" xml:space="preserve"><value>[color=#ffbb90]Second</value></data>
   <data name="pmdorand/settings:monster.typing/options.selection_rules" xml:space="preserve"><value>Selection Rules</value></data>
   <data name="pmdorand/settings:monster.typing/options.selection_rules/banned_types" xml:space="preserve"><value>Banned Types</value></data>
   <data name="pmdorand/settings:monster.typing/options.selection_rules/enforce_different_types" xml:space="preserve"><value>Enforce Different Types</value></data>
   <data name="pmdorand/settings:monster.skills/options.type_matching/options.mismatch_limit" xml:space="preserve"><value>Mismatch Limit</value></data>
   <data name="pmdorand/settings:monster.skills/options.type_matching/options.target_rate" xml:space="preserve"><value>Target Rate</value></data>
+  <data name="pmdorand/settings:monster.typing/options.restrictions" xml:space="preserve"><value>Restrictions</value></data>
+  <data name="pmdorand/settings:monster.typing/options.restrictions/allow_none" xml:space="preserve"><value>Allow No Type</value></data>
+  <data name="pmdorand/settings:monster.typing/options.restrictions/type_effectivity" xml:space="preserve"><value>Effectivity</value></data>
+  <data name="pmdorand/settings:monster.typing/options.restrictions/type_effectivity/options.mode" xml:space="preserve"><value>Mode</value></data>
+  <data name="pmdorand/settings:monster.typing/options.restrictions/type_effectivity/options.mode=1" xml:space="preserve"><value>First vs. Second</value></data>
+  <data name="pmdorand/settings:monster.typing/options.restrictions/type_effectivity/options.mode=2" xml:space="preserve"><value>Each vs. Random</value></data>
+  <data name="pmdorand/settings:monster.typing/options.restrictions/type_effectivity/options.mode=3" xml:space="preserve"><value>Both vs. Random</value></data>
+  <data name="pmdorand/settings:monster.typing/options.restrictions/type_effectivity/options.minimum" xml:space="preserve"><value>Minimum</value></data>
+  <data name="pmdorand/settings:monster.typing/options.restrictions/type_effectivity/options.maximum" xml:space="preserve"><value>Maximum</value></data>
 
   <data name="pmdorand/settings:monster.texts/options.names" xml:space="preserve"><value>Names</value></data>
   <data name="pmdorand/settings:monster.texts/options.names/options.per_form" xml:space="preserve"><value>Randomize Each Form</value></data>
@@ -173,6 +314,14 @@
   <data name="pmdorand/settings:monster.texts/options.titles/options.allow_duplicates" xml:space="preserve"><value>Allow Duplicates</value></data>
   <data name="pmdorand/settings:monster.texts/options.titles/options.include_existing" xml:space="preserve"><value>Include Existing</value></data>
   <data name="pmdorand/settings:monster.texts/options.titles/options.prioritize_custom_names" xml:space="preserve"><value>Prioritize Custom Names</value></data>
+
+  <data name="pmdorand/settings:universal.stats/options.hunger_rate" xml:space="preserve"><value>Hunger Rate</value></data>
+  <data name="pmdorand/settings:universal.stats/options.hunger_rate/options.leader" xml:space="preserve"><value>Leader Hunger</value></data>
+  <data name="pmdorand/settings:universal.stats/options.hunger_rate/options.party" xml:space="preserve"><value>Party Hunger</value></data>
+  <data name="pmdorand/settings:universal.stats/options.natural_regeneration" xml:space="preserve"><value>Natural Regeneration</value></data>
+  <data name="pmdorand/settings:universal.stats/options.natural_regeneration/options.in_combat" xml:space="preserve"><value>Combat Regeneration</value></data>
+  <data name="pmdorand/settings:universal.stats/options.natural_regeneration/options.out_of_combat" xml:space="preserve"><value>Safe Regeneration</value></data>
+  <data name="pmdorand/settings:universal.stats/options.natural_regeneration/options.starving" xml:space="preserve"><value>Starving Regeneration</value></data>
 
   <data name="pmdorand/settings:universal.type_matchups/options.symmetrical" xml:space="preserve"><value>Symmetrical Matchups</value></data>
 </root>

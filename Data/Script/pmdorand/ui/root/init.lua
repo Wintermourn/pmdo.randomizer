@@ -1,135 +1,204 @@
-local graphics = require 'pmdorand.util.graphics'
+local async = require 'lib.pmdorand.async'
+
 local create_text = require 'pmdorand.util.create_text'
+local graphics = require 'pmdorand.util.graphics'
 local header = require 'pmdorand.util.header'
-local generation_manager = require 'pmdorand.randomizer.core.manager'
-local text_pool = require 'pmdorand.util.text_pool'
+local play_sound = require 'pmdorand.util.play_sound'
 
-local input_type = RogueEssence.FrameInput.InputType
+local __InputType = RogueEssence.FrameInput.InputType
 
-local strings = {
-    tab_count = STRINGS:FormatKey 'pmdorand:tab.number'
+local has_bgm_pitcher = luanet.ctype(RogueEssence.Content.SoundManager):GetMethod("SetBGMPitch") ~= nil
+--- Holds local data for the menu, made accessible for other scripts in case changes need to be made.
+local global_state = {
+    --- Holds the last song playing before the menu is first opened. This is set once.
+    ---@type string?
+    last_song = nil,
+    ---@type string[]
+    music_pool = {
+        'Rescue.ogg',
+        'Lava Floe Island Water.ogg',
+        'Shop.ogg',
+        'Mysterious Passage.ogg',
+        'Demonstration 3.ogg'
+    },
+    placeholders = {
+        tab_title = select(2, RogueEssence.Text.Strings:TryGetValue('pmdorand:tab.number')) or '%s [color=#aaaaaa](%d/%d)'
+    },
+    --- Holds the constructors for all of the menu's tabs. Each entry should be a table containing `new()`.
+    --- The order of entries decides the order of tabs in the menu.
+    tabs = {
+        (require 'pmdorand.ui.root.tabs.status'),
+        (require 'pmdorand.ui.root.tabs.archipelago'),
+        (require 'pmdorand.ui.root.tabs.settings'),
+        (require 'pmdorand.ui.root.tabs.components')
+    }
 }
 
-local function refresh_text(menu)
-    menu.elements.frame.tab:SetText(strings.tab_count:format(menu.tabs[menu.state.current_tab].name:upper(), menu.state.current_tab, #menu.tabs))
-end
-
-local directions = {
-    [RogueElements.Dir8.Left] = function(menu)
-        menu.tabs[menu.state.current_tab].left(menu)
-        menu.state.current_tab = (menu.state.current_tab - 2) % #menu.tabs + 1
-        text_pool.update_text(menu.menu, menu.elements.text_pool, menu.tabs[menu.state.current_tab].entered(menu), 12, 19, 20, 48)
-        _GAME:SE("Menu/Select")
-        refresh_text(menu)
-    end,
-    [RogueElements.Dir8.Right] = function(menu)
-        menu.tabs[menu.state.current_tab].left(menu)
-        menu.state.current_tab = menu.state.current_tab % #menu.tabs + 1
-        text_pool.update_text(menu.menu, menu.elements.text_pool, menu.tabs[menu.state.current_tab].entered(menu), 12, 19, 20, 48)
-        _GAME:SE("Menu/Select")
-        refresh_text(menu)
+local function exit(state)
+    local tab = state.tabs[state.position.tab]
+    if tab then
+        if tab.on_exit and tab:on_exit(state) == false then
+            _GAME:SE 'Menu/Cancel'
+            return
+        end
     end
-}
-
-local last_state, last_direction = 0
-local state_texts = {
-    function(menu)
-        if last_state == 0 then return end
-        menu.elements.generation_status[1]:SetText '[color=#333333]Idle'
-        menu.elements.generation_status[2]:SetText '[color=#333333]Not Generating'
-    end,
-    function(menu)
-        menu.elements.generation_status[1]:SetText 'Generating'
-        menu.elements.generation_status[2]:SetText (generation_manager.get_status()) 
-    end,
-    function(menu)
-        if last_state == 2 then return end
-        menu.elements.generation_status[1]:SetText 'Finished'
-        menu.elements.generation_status[2]:SetText '[color=#44ff99]Done!'
-    end,
-    function(menu)
-        if last_state == 3 then return end
-        menu.elements.generation_status[1]:SetText '[color=#ff4499]Failed'
-        menu.elements.generation_status[2]:SetText 'Check logs!'
-    end
-}
-
-local function close_menu(menu, inputs)
-    if generation_manager.get_state() == 1 then return end
-    _GAME:SE("Menu/Cancel")
+    _GAME:SE 'Menu/Cancel'
+    state.promises.on_exit:resolve()
+    --service.set_music_pitch()
+    if has_bgm_pitcher then RogueEssence.Content.SoundManager.SetBGMPitch(0) end
+    if global_state.last_song ~= nil then _GAME:BGM(global_state.last_song, true) end
     _MENU:RemoveMenu()
 end
-local function controls_listener(menu, inputs)
 
-    local state = generation_manager.get_state()
-    local text_fn = state_texts[state + 1]
-    if text_fn then
-        text_fn(menu)
-        last_state = state
-    end
+local function update_title(state, content)
+    local text = state.elements.frame.title
+    text:SetText(content)
+end
 
-    if inputs.Direction ~= last_direction then
-        menu.state.input_debounce = 0
-    else
-        if menu.state.input_debounce > 0 then menu.state.input_debounce = menu.state.input_debounce - 1 end
-    end
-    last_direction = inputs.Direction
-    if inputs:JustPressed(input_type.Cancel) or inputs:JustPressed(input_type.Menu) then
-        close_menu(menu, inputs)
+local function set_cursor_pos(state, x, y)
+    x, y = (x or 0) + 10, y or 0
+    state.elements.cursor.Loc = RogueElements.Loc(x, y + 21)
+end
+
+local inputs = {
+    directions = {
+        [RogueElements.Dir8.Up] = function(state)
+            local tab = state.tabs[state.position.tab]
+            if tab then
+                tab:move(state, -1) 
+            end
+        end,
+        [RogueElements.Dir8.Down] = function(state)
+            local tab = state.tabs[state.position.tab]
+            if tab then
+                tab:move(state, 1) 
+            end
+        end,
+        [RogueElements.Dir8.Left] = function(state, input)
+            local tab = state.tabs[state.position.tab]
+            if tab then
+                tab:left(state)
+            end
+            state.position.tab = (state.position.tab - 2) % #state.tabs + 1
+            tab = state.tabs[state.position.tab]
+            if tab then
+                update_title(state, global_state.placeholders.tab_title:format ( tab.info.title, state.position.tab, #state.tabs ) )
+                tab:entered(state)
+            end
+            play_sound('Menu/Select', 1, math.random() * (1/12) - (1/24))
+        end,
+        [RogueElements.Dir8.Right] = function(state, input)
+            local tab = state.tabs[state.position.tab]
+            if tab then
+                tab:left(state)
+            end
+            state.position.tab = state.position.tab % #state.tabs + 1
+            tab = state.tabs[state.position.tab]
+            if tab then
+                update_title(state, global_state.placeholders.tab_title:format ( tab.info.title, state.position.tab, #state.tabs ) )
+                tab:entered(state)
+            end
+            play_sound('Menu/Select', 1, math.random() * (1/12) - (1/24))
+        end
+    },
+    bindings = {
+        [__InputType.Cancel] = function(state)
+            exit(state)
+        end
+    }
+}
+
+local __Keys = luanet.namespace 'Microsoft.Xna.Framework.Input' .Keys
+local SDL = luanet.namespace 'SDL2' .SDL
+local function controls_listener(state, input)
+    if input:JustPressed(__InputType.Menu) then
+        exit(state)
         return
     end
-    if directions[inputs.Direction] and menu.state.input_debounce == 0 then
-        menu.elements.cursor:ResetTimeOffset()
-        directions[inputs.Direction](menu, inputs)
-        menu.state.input_debounce = 20
+    if state.input.debounce > 0 then state.input.debounce = state.input.debounce - 1 end
+
+    for i,k in pairs(inputs.bindings) do
+        if input:JustPressed(i) then
+            state.elements.cursor:ResetTimeOffset()
+            return k(state, input)
+        end
     end
 
-    text_pool.update_text(menu.menu, menu.elements.text_pool, menu.tabs[menu.state.current_tab].input(menu, inputs), 12, 19, 20, 48)
+    local different_direction = input.Direction ~= state.input.last_direction
+    if inputs.directions[input.Direction] and (state.input.debounce == 0 or different_direction) then
+        state.elements.cursor:ResetTimeOffset()
+        state.input.sound_volume = different_direction and 1 or (state.input.sound_volume - state.input.sound_volume * 0.05)
+        state.input.debounce = different_direction and 18 or 6
+        inputs.directions[input.Direction](state, input)
+    end
+    state.input.last_direction = input.Direction
+
+    local tab = state.tabs[state.position.tab]
+    if tab then
+        tab:update(state, input)
+    end
 end
 
 local public = {}
 
-function public.create()
-    ---@class pmdorand.ui.root
-    local out = {
-        state = {
-            current_tab = 1,
-            input_debounce = 0,
+function public.open()
+    local state = {
+        memory = {},
+        tabs = {},
+        position = {
+            tab = 1
         },
+        input = {
+            sound_volume = 1,
+            debounce = 0,
+            last_direction = nil
+        },
+        contents = {},
         elements = {
             frame = {},
-            text_pool = {},
-            generation_status = {}
+            pool = {}
         },
-        tabs = {
-            (require 'pmdorand.ui.root.tabs.status'),
-            (require 'pmdorand.ui.root.tabs.settings'),
-            (require 'pmdorand.ui.root.tabs.components')
-        }
+        promises = {
+            on_exit = async.promise()
+        },
+        set_cursor_pos = set_cursor_pos
     }
-    last_state = -1
+
+    for i, k in ipairs(global_state.tabs) do print(type(k), i, k) state.tabs[i] = k.new() end
 
     local ww, wh = graphics.get_screen_dimensions()
-    local mw, mh = math.floor(ww * 0.7), wh - 16--math.floor(wh * 0.7)
-    out.menu = RogueEssence.Menu.ScriptableMenu(8, 8, mw, mh, function(i) controls_listener(out, i) end)
+    local mw, mh = math.floor(ww * 0.7), wh - 16
+    state.menu = RogueEssence.Menu.ScriptableMenu(8, 8, mw, mh, function(i) controls_listener(state, i) end)
 
-    out.elements.cursor = RogueEssence.Menu.MenuCursor(out.menu)
-    out.elements.frame.title = create_text('Randomizer [color=#aaaaaa]'.. header.Version:ToString(), 10, 7, RogueElements.DirH.Left)
-    out.elements.frame.tab = create_text(strings.tab_count:format(out.tabs[out.state.current_tab].name:upper(), out.state.current_tab, #out.tabs), mw - 10, 7, RogueElements.DirH.Right)
-    out.elements.generation_status[1] = create_text('[color=#333333]Idle', 10, mh - 17, RogueElements.DirH.Left)
-    out.elements.generation_status[2] = create_text('[color=#333333]Not Generating', mw - 10, mh - 17, RogueElements.DirH.Right)
+    local realElements, stateElements = state.menu.Elements, state.elements
 
-    out.menu.Elements:Add(out.elements.frame.title)
-    out.menu.Elements:Add(out.elements.frame.tab)
-    out.menu.Elements:Add(RogueEssence.Menu.MenuDivider(RogueElements.Loc(10, 18), mw - 20))
-    out.menu.Elements:Add(RogueEssence.Menu.MenuDivider(RogueElements.Loc(10, mh - 20), mw - 20))
-    out.menu.Elements:Add(out.elements.generation_status[1])
-    out.menu.Elements:Add(out.elements.generation_status[2])
-    out.menu.Elements:Add(out.elements.cursor)
+    stateElements.frame.window_name = create_text('Randomizer [color=#aaaaaa]'.. header.Version:ToString(), 10, 7)
+    stateElements.frame.title = create_text('?', mw - 10, 7, RogueElements.DirH.Right)
 
-    text_pool.update_text(out.menu, out.elements.text_pool, out.tabs[out.state.current_tab].entered(out), 12, 19, 20, 48)
+    realElements:Add(stateElements.frame.window_name)
+    realElements:Add(stateElements.frame.title)
+    realElements:Add(RogueEssence.Menu.MenuDivider(RogueElements.Loc(10, 18), mw - 20))
 
-    return out.menu
+    stateElements.cursor = RogueEssence.Menu.MenuCursor(state.menu)
+    set_cursor_pos(state, 0, 0)
+    realElements:Add(stateElements.cursor)
+
+    --service.set_music_pitch(0.16667 * (math.random() < 0.01 and (math.random() * 2 - 1) or -1))
+    if has_bgm_pitcher then
+        RogueEssence.Content.SoundManager.SetBGMPitch(-2/12)
+    end
+    if global_state.last_song == nil then
+        global_state.last_song = _GAME.Song
+    end
+
+    state.tabs[1]:entered(state)
+    update_title(state, global_state.placeholders.tab_title:format ( state.tabs[1].info.title, 1, #state.tabs ) )
+
+    _GAME:BGM(global_state.music_pool[math.random(1, #global_state.music_pool)], true)
+    _MENU:AddMenu(state.menu, true)
+
+    return state.promises.on_exit
 end
 
+public.global_state = global_state
 return public

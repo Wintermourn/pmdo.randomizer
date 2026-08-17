@@ -20,7 +20,7 @@ return setter.builder() --[[@as ConfigSetterBuilder<Config.Float>]]
         entry:set(math.min(upper_bound, math.max(lower_bound, entry.value + step)))
 
         if #entry.texts > 1 then
-            entry.texts[2][1] = displays:get 'Config.Float' .display(entry.setting, entry.value)
+            entry.texts[2][1] = displays:get 'Config.Float' .display(entry.setting, entry.value, entry)
         end
         return true
     end)

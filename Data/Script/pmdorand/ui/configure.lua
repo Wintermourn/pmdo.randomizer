@@ -4,10 +4,12 @@ local graphics = require 'pmdorand.util.graphics'
 local create_text = require 'pmdorand.util.create_text'
 local text_pool = require 'pmdorand.util.text_pool'
 local play_sound = require 'pmdorand.util.play_sound'
+local soft_translate = require 'pmdorand.util.soft_translate'
 local __InputType = RogueEssence.FrameInput.InputType
 
 local registries = require 'pmdorand.randomizer.core.registry'
 local displays = registries .get 'config.display'
+local documentors = registries .get 'config.documentation'
 local setters = registries .get 'config.setter'
 
 local blank = {}
@@ -38,6 +40,15 @@ local function compile_translation_key(state, key)
     return 'pmdorand/settings:'.. table.concat(path, '/')
 end
 
+local function compile_documentation_key(state, key)
+    local path = {}
+    for _, level in ipairs(state.stack) do
+        path[#path + 1] = level.id
+    end
+    path[#path + 1] = key
+    return 'pmdorand/documentation:'.. table.concat(path, '/')
+end
+
 local function current_values(state)
     return state.stack[#state.stack].values
 end
@@ -58,32 +69,37 @@ local stat_entries = {
     {
         struct = {'structure', 'minimum'},
         value = 'minimum',
-        translation = 'pmdorand/settings:stat/minimum'
+        translation = 'pmdorand/settings:stat/minimum',
+        documentation = 'pmdorand/documentation:stat/minimum'
     },
     {
         struct = {'structure', 'maximum'},
         value = 'maximum',
-        translation = 'pmdorand/settings:stat/maximum'
+        translation = 'pmdorand/settings:stat/maximum',
+        documentation = 'pmdorand/documentation:stat/maximum'
     },
     {
         struct = {'structure', 'mode'},
         value = {'range', 'mode'},
-        translation = 'pmdorand/settings:stat/mode'
+        translation = 'pmdorand/settings:stat/mode',
+        documentation = 'pmdorand/documentation:stat/mode'
     },
     {
         struct = {'structure', 'value'},
         value = {'range', 'value'},
-        translation = 'pmdorand/settings:stat/value'
+        translation = 'pmdorand/settings:stat/value',
+        documentation = 'pmdorand/documentation:stat/value'
     },
     {
         struct = {'structure', 'original_pull'},
         value = 'originalPull',
-        translation = 'pmdorand/settings:stat/pull'
+        translation = 'pmdorand/settings:stat/pull',
+        documentation = 'pmdorand/documentation:stat/pull'
     }
 }
 local entry_fetch = {
     ['Config.Stat'] = function(struct, vals)
-        local keys, configs, values, value_pointers, translation_keys = {}, {}, {}, {}, {}
+        local keys, configs, values, value_pointers, translation_keys, documentation_keys = {}, {}, {}, {}, {}, {}
 
         local out_key
         for _, entry in ipairs(stat_entries) do
@@ -105,9 +121,10 @@ local entry_fetch = {
             values[out_key] = ptr[out_key.value[#out_key.value]]
             value_pointers[out_key] = {ptr, out_key.value[#out_key.value]}
             translation_keys[out_key] = entry.translation
+            documentation_keys[out_key] = entry.documentation
         end
 
-        return keys, configs, values, value_pointers, translation_keys
+        return keys, configs, values, value_pointers, translation_keys, documentation_keys
     end,
     ['Config.Table'] = function(struct, vals)
         local keys, configs, values, value_pointers = {}, {}, {}, {}
@@ -122,10 +139,10 @@ local entry_fetch = {
         end
         table.sort(keys, sort_keys)
 
-        return keys, configs, values, value_pointers, blank
+        return keys, configs, values, value_pointers, blank, blank
     end,
     ['Config.Feature'] = function(struct, vals)
-        local keys, configs, values, value_pointers, translation_keys = {}, {}, {}, {}, {}
+        local keys, configs, values, value_pointers, translation_keys, documentation_keys = {}, {}, {}, {}, {}, {}
 
         local out_key
         for _, key in ipairs { 'enabled', 'randomization_chance' } do
@@ -135,6 +152,7 @@ local entry_fetch = {
             values[out_key] = vals[key]
             value_pointers[out_key] = {vals, key}
             translation_keys[out_key] = 'pmdorand/settings:feature/'.. key
+            documentation_keys[out_key] = 'pmdorand/documentation:feature/'.. key
         end
         for _, key in ipairs(struct.ordered_keys) do
             out_key = data_key({'content', key}, {'options', key})
@@ -144,7 +162,7 @@ local entry_fetch = {
             value_pointers[out_key] = {vals.options, key}
         end
 
-        return keys, configs, values, value_pointers, translation_keys
+        return keys, configs, values, value_pointers, translation_keys, documentation_keys
     end
 }
 
@@ -177,19 +195,21 @@ local function update_contents(state)
 
     local fetch = entry_fetch[getmetatable(current_structure(state)).__title]
     if fetch == nil then error 'whar' end
-    local keys, configs, values, value_pointers, translation_keys = fetch(current_structure(state), current_values(state))
+    local keys, configs, values, value_pointers, translation_keys, documentation_keys = fetch(current_structure(state), current_values(state))
 
-    local entry, translation_key
+    local entry, translation_key, documentation_key
     for i, key in ipairs(keys) do
         translation_key = translation_keys[key] or compile_translation_key(state, key.value.flat)
+        documentation_key = documentation_keys[key] or compile_documentation_key(state, key.value.flat)
         entry = {
             texts = {
                 {RogueEssence.Text.Strings:ContainsKey(translation_key) and STRINGS:FormatKey(translation_key) or translation_key, 12, (i - 1) * 12},
-                {displays:get(configs[key].__title).display(configs[key], values[key]), -2, (i - 1) * 12, RogueElements.DirH.Right}
+                {'', -2, (i - 1) * 12, RogueElements.DirH.Right}
             },
-            setting = configs[key], value = values[key], keys = key, value_pointer = value_pointers[key], translation_key = translation_key,
+            setting = configs[key], value = values[key], keys = key, value_pointer = value_pointers[key], translation_key = translation_key, documentation_key = documentation_key,
             push = state.entry_push, set = entry_set_value, update_text = state.entry_update_body
         }
+        entry.texts[2][1] = displays:get(configs[key].__title).display(configs[key], values[key], entry --[[@as pmdorand.config.entry<any>]])
         by_index[#by_index + 1] = entry
         by_key[key] = entry
     end
@@ -278,6 +298,31 @@ local function interact_with_hovered(state, method, ...)
     return res ~= false
 end
 
+local function document_hovered(state, method, ...)
+    local hovered = state.contents.by_index[state.position.cursor]
+    if not hovered then
+        return false
+    end
+    local has_documentation, text
+    if hovered.documentation_key ~= nil then
+        has_documentation, text = RogueEssence.Text.Strings:TryGetValue(hovered.documentation_key)
+    else
+        has_documentation, text = false, nil
+    end
+    local option_documentation = {soft_translate(hovered.translation_key), has_documentation and text or soft_translate 'pmdorand/documentation:none', is_setting = true, key = hovered.documentation_key}
+    option_documentation[2] = string.match(option_documentation[2], '^%s*(.-)%s*$')
+    local handler = documentors:get(hovered.setting.__title)
+    if handler ~= nil and type(handler.documentation) == 'function' then
+        require 'pmdorand.ui.documentation' .open(option_documentation, handler.documentation(hovered.setting, hovered.value, hovered))
+        return true
+    elseif has_documentation == true then
+        require 'pmdorand.ui.documentation' .open(option_documentation)
+        return true
+    end
+    
+    return false
+end
+
 local inputs = {
     directions = {
         [RogueElements.Dir8.Up] = function(state)
@@ -332,6 +377,13 @@ local inputs = {
                 play_sound('Menu/Cancel', 0.8) 
             end
             update_body(state)
+        end,
+        [__InputType.Skills] = function(state)
+            if document_hovered(state, 'select') then
+                play_sound('Menu/Sort', 0.8) 
+            else
+                play_sound('Menu/Cancel', 0.8)
+            end
         end
     }
 }

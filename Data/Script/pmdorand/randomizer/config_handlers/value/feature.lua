@@ -33,7 +33,7 @@ return setter.builder() --[[@as ConfigSetterBuilder<Config.Feature>]]
         entry.setting = temp.setting
 
         if #entry.texts > 1 then
-            entry.texts[2][1] = displays :get 'Config.Feature' .display(entry.setting, entry.value)
+            entry.texts[2][1] = displays :get 'Config.Feature' .display(entry.setting, entry.value, entry)
         end
         return res
     end)

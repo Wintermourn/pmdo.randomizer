@@ -16,7 +16,7 @@ return setter.builder() --[[@as ConfigSetterBuilder<Config.CustomDisplay>]]
         entry.setting = this
 
         if #entry.texts > 1 then
-            entry.texts[2][1] = displays:get 'Config.CustomDisplay' .display(this, entry.value)
+            entry.texts[2][1] = displays:get 'Config.CustomDisplay' .display(this, entry.value, entry)
             entry:update_text()
         end
         return res
@@ -31,7 +31,7 @@ return setter.builder() --[[@as ConfigSetterBuilder<Config.CustomDisplay>]]
         entry.setting = this
 
         if #entry.texts > 1 then
-            entry.texts[2][1] = displays:get 'Config.CustomDisplay' .display(this, entry.value)
+            entry.texts[2][1] = displays:get 'Config.CustomDisplay' .display(this, entry.value, entry)
         end
         return res
     end)

@@ -1,33 +1,68 @@
+local input_type = RogueEssence.FrameInput.InputType
+
 local async = require 'lib.pmdorand.async'
+local clipboard = require 'pmdorand.util.clipboard'
+local component_registry = require 'pmdorand.randomizer.core.registry' .get 'components'
+local configurations = require 'pmdorand.randomizer.cache.configurations'
+local configure = require 'pmdorand.ui.configure'
 local play_sound = require 'pmdorand.util.play_sound'
 local soft_translate = require 'pmdorand.util.soft_translate'
-local configurations = require 'pmdorand.randomizer.cache.configurations'
-local generation_manager = require 'pmdorand.randomizer.core.manager'
-local configure = require 'pmdorand.ui.configure'
-local component_registry = require 'pmdorand.randomizer.core.registry' .get 'components'
-local provider_registry = require 'pmdorand.randomizer.core.registry' .get 'providers'
+local text_pool = require 'pmdorand.util.text_pool'
+
 local strings = {
     component_count = soft_translate 'pmdorand:stats.components.count',
     component_span = soft_translate 'pmdorand:stats.components.span',
-    enabled = soft_translate('pmdorand:enabled'),
-    disabled = soft_translate('pmdorand:disabled')
+    nyi = soft_translate 'pmdorand:nyi.short',
+    enabled = soft_translate 'pmdorand:enabled',
+    disabled = soft_translate 'pmdorand:disabled',
+    dynamic = soft_translate 'pmdorand:dynamic'
 }
 
-local input_type = RogueEssence.FrameInput.InputType
-
-
-local cache = {
-    current_scroll = 0,
-    cursor = 1,
-    lines = {
-        texts = {},
-        at = {}
-    },
-    components = {},
-    pending_update = nil
+local info = {
+    title = STRINGS:FormatKey 'pmdorand:tab/components'
 }
 
-local function create_lines()
+local state = {
+    info = info,
+    position = {cursor = 0, height = 0},
+    lines = {base_texts = {}, at = {}}
+}
+state.__index = state
+
+---todo: update
+function state:set_cursor_pos(menu, x, y)
+    x, y = (x or 0) + 10, y or 0
+    local menu_height = menu.menu.Bounds.Height - 36
+    local v = math.floor(y - menu_height / 3 * 2)
+    local max = math.maxinteger
+    if #self.lines.at > 0 then
+        max = self.lines.at[#self.lines.at][2] + 2 - menu_height
+    end
+    if self.position.height > v then
+        if self.position.height - v > menu_height / 3 then
+            self.position.height = math.min(max, math.max(0, math.floor(self.position.height - (self.position.height - v - menu_height / 3))))
+        end
+    elseif y > menu_height / 3 * 2 then
+        self.position.height = math.min(max, v)
+    end
+    menu.elements.cursor.Loc = RogueElements.Loc(x, y + 19 - self.position.height)
+end
+
+function state:update_cursor(menu, dy)
+    local at = self.lines.at[self.position.cursor]
+    if not at then
+        local pos = ((dy or 0) > 0) and 1 or #self.lines.at
+        at = self.lines.at[pos]
+        if not at then
+            pos = 1
+            at = self.lines.at[1] 
+        end
+        self.position.cursor = pos
+    end
+    self:set_cursor_pos(menu, at[1], at[2])
+end
+
+function state:create_text(menu)
     local texts, at = {}, {}
     local providers, components, enabled_counts = {}, {}, {}
 
@@ -58,7 +93,7 @@ local function create_lines()
             end
         end
     end
-    cache.components = components
+    state.components = components
 
     table.sort(providers, function(a, b)
         return soft_translate('pmdorand/provider:'.. a) < soft_translate('pmdorand/provider:'.. b)
@@ -66,6 +101,7 @@ local function create_lines()
 
     local current_height = 0
     local dynamic_text, component_names, provider_enabled_count
+    local left, right
     for _, provider_id in ipairs(providers) do
         ---@type table
         component_names = components[provider_id]
@@ -82,104 +118,91 @@ local function create_lines()
         end
 
         current_height = current_height + 2
-        texts[#texts + 1] = {
-            {soft_translate('pmdorand/provider:'.. provider_id), 6, current_height, RogueElements.DirH.Left},
-            {dynamic_text, -2, current_height, RogueElements.DirH.Right}
-        }
-        at[#texts] = {0, current_height, type = 'provider', id = provider_id}
+        left = {soft_translate('pmdorand/provider:'.. provider_id), 6, current_height, RogueElements.DirH.Left}
+        right = {dynamic_text, -2, current_height, RogueElements.DirH.Right}
+        texts[#texts + 1] = left
+        texts[#texts + 1] = right
+        at[#at + 1] = {0, current_height, type = 'provider', id = provider_id, left = left, right = right}
         current_height = current_height + 12
         for _, component_id in ipairs(component_names) do
             enabledness = configurations.get_master(component_id).enabled
+
             if enabledness == true then
-                dynamic_text = soft_translate 'pmdorand:enabled'
+                dynamic_text = strings.enabled
             elseif enabledness == false then
-                dynamic_text = soft_translate 'pmdorand:disabled'
-            else
-                dynamic_text = soft_translate 'pmdorand:dynamic' .. ('[color] (%02d%%)'):format(math.floor(enabledness * 100 + 0.5))
+                dynamic_text = strings.disabled
+            elseif type(enabledness) == 'number' then
+                dynamic_text = strings.dynamic .. ('[color] (%02d%%)'):format(math.floor(enabledness * 100 + 0.5))
+            end
+            if component_registry:get(component_id).not_implemented then
+               dynamic_text = string.format("%s %s", strings.nyi, dynamic_text)
             end
 
-            texts[#texts + 1] = {
-                {soft_translate('pmdorand/component:'.. component_id), 10, current_height, RogueElements.DirH.Left},
-                {dynamic_text, -2, current_height, RogueElements.DirH.Right}
-            }
-            at[#texts] = {4, current_height, type = 'component', id = component_id}
+            left = {soft_translate('pmdorand/component:'.. component_id), 10, current_height, RogueElements.DirH.Left}
+            right = {dynamic_text, -2, current_height, RogueElements.DirH.Right}
+            texts[#texts + 1] = left
+            texts[#texts + 1] = right
+            at[#at + 1] = {4, current_height, type = 'component', id = component_id, left = left, right = right}
             current_height = current_height + 10
         end
     end
 
-    cache.lines.texts = texts
-    cache.lines.at = at
+    self.components = components
+    self.lines = {
+        base_texts = texts,
+        at = at
+    }
+    self:update_text(menu)
 end
 
-local function set_cursor_pos(menu, x, y)
-    x, y = (x or 0) + 10, y or 0
-    local menu_height = menu.menu.Bounds.Height - 50
-    local v = math.floor(y - menu_height / 3 * 2)
-    local max = math.maxinteger
-    if #cache.lines.at > 0 then
-        max = cache.lines.at[#cache.lines.at][2] + 2 - menu_height
+function state:update_text(menu)
+    local base_texts = self.lines.base_texts
+    local texts = {}
+
+    local offset
+    for i,k in ipairs(base_texts) do
+        offset = k[3] - self.position.height
+        if offset < 0 then goto continue_update_text end
+        texts[#texts + 1] = {k[1], k[2], offset, k[4], k[5]}
+        ::continue_update_text::
     end
-    if cache.current_scroll > v then
-        if cache.current_scroll - v > menu_height / 3 then
-            cache.current_scroll = math.min(max, math.max(0, math.floor(cache.current_scroll - (cache.current_scroll - v - menu_height / 3))))
-        end
-    elseif y > menu_height / 3 * 2 then
-        cache.current_scroll = math.min(max, v)
-    end
-    menu.elements.cursor.Loc = RogueElements.Loc(x, y + 19 - cache.current_scroll)
+
+    text_pool.update_text(
+        menu.menu,
+        menu.elements.pool,
+        texts,
+        12, 19, 20, 20
+    )
 end
 
-local function create_display_texts(menu)
-    local max_height = cache.current_scroll + (menu.menu.Bounds.Height - 50)
-    local hidden_top, hidden_bottom = cache.lines.at[1][2] < cache.current_scroll, true
-    local output = {}
-    local height, lines, line
-    for i = 1, #cache.lines.texts do
-        lines = cache.lines.texts[i] --[[@as table[] ]]
-        height = cache.lines.at[i][2]
-        if height > max_height then goto skip_remaining_lines__entered end
-        if height > cache.current_scroll then
-            for l = 1, #lines do
-                line = lines[l]
-                output[#output + 1] = {line[1], line[2], line[3] - cache.current_scroll, line[4], line[5]}
-            end
-        end
-    end
-    hidden_bottom = false
-    ::skip_remaining_lines__entered::
-
-    if hidden_top then
-        output[#output + 1] = {'...', math.floor((menu.menu.Bounds.Width - 24) / 2), 6, RogueElements.DirH.None, RogueElements.DirV.Down} 
-    end
-
-    if hidden_bottom then
-        output[#output + 1] = {'...', math.floor((menu.menu.Bounds.Width - 24) / 2), -2, RogueElements.DirH.None} 
-    end
-
-    return output
+function state:entered(menu)
+    self:create_text(menu)
+    self:update_cursor(menu)
 end
 
-local function prompt_enabledness(menu, id)
+
+
+local function prompt_enabledness(self, menu, id)
     local promise = async.promise()
     ---@type table
     local actions
     actions = {
         {soft_translate 'pmdorand:set_all_to' .. soft_translate 'pmdorand:enabled', true, function()
-            for _, component_id in ipairs(cache.components[id]) do
+            for _, component_id in ipairs(self.components[id]) do
                 configurations.get_master(component_id).enabled = true
             end
             promise:resolve()
             _MENU:RemoveMenu()
         end},
         {soft_translate 'pmdorand:set_all_to' .. soft_translate 'pmdorand:dynamic', true, function()
-            for _, component_id in ipairs(cache.components[id]) do
+            for _, component_id in ipairs(self.components[id]) do
                 configurations.get_master(component_id).enabled = 0.5
             end
             promise:resolve()
             _MENU:RemoveMenu()
         end},
         {soft_translate 'pmdorand:set_all_to' .. soft_translate 'pmdorand:disabled', true, function()
-            for _, component_id in ipairs(cache.components[id]) do
+            for _, component_id in ipairs(self.components[id]) do
                 configurations.get_master(component_id).enabled = false
             end
             promise:resolve()
@@ -199,133 +222,108 @@ local function prompt_enabledness(menu, id)
     return promise
 end
 
-local function prompt_component(menu, id)
+local function prompt_component(self, menu, id)
     local component = component_registry:get(id)
     configure.open(component, configurations.get_master(id)):on_resolved(function()
-        create_lines()
-        cache.pending_update = create_display_texts(menu)
+        self:create_text(menu)
     end)
 end
 
-local function jump_to_previous_provider(menu)
-    if #cache.lines.at > 1 then cache.cursor = (cache.cursor - 2) % #cache.lines.at + 1 else cache.cursor = 1 end
-    while cache.lines.at[cache.cursor].type ~= 'provider' do
-        if #cache.lines.at > 1 then cache.cursor = (cache.cursor - 2) % #cache.lines.at + 1 else cache.cursor = 1; break end
+local function jump_to_previous_provider(self, menu)
+    if #self.lines.at > 1 then
+        self.position.cursor = (self.position.cursor - 2) % #self.lines.at + 1
+    else
+        self.position.cursor = 1
+        self:update_cursor(menu, -1)
+        _GAME:SE 'Menu/Skip'
+        self:update_text(menu)
+        return
     end
-    ---@type int[]
-    local cursor_pos = cache.lines.at[(cache.cursor - 1) % #cache.lines.at + 1]
-    set_cursor_pos(menu, cursor_pos[1], cursor_pos[2])
+
+    while self.lines.at[self.position.cursor].type ~= 'provider' do
+        self.position.cursor = (self.position.cursor - 2) % #self.lines.at + 1
+    end
+
+    self:update_cursor(menu, -1)
     _GAME:SE 'Menu/Skip'
-    return create_display_texts(menu)
+    self:update_text(menu)
 end
 
-local function jump_to_next_provider(menu)
-    if #cache.lines.at > 1 then cache.cursor = cache.cursor % #cache.lines.at + 1 else cache.cursor = 1 end
-    while cache.lines.at[cache.cursor].type ~= 'provider' do
-        if #cache.lines.at > 1 then cache.cursor = cache.cursor % #cache.lines.at + 1 else cache.cursor = 1; break end
+local function jump_to_next_provider(self, menu)
+    if #self.lines.at > 1 then
+        self.position.cursor = self.position.cursor % #self.lines.at + 1
+    else
+        self.position.cursor = 1
+        self:update_cursor(menu, 1)
+        _GAME:SE 'Menu/Skip'
+        self:update_text(menu)
+        return
     end
-    ---@type int[]
-    local cursor_pos = cache.lines.at[(cache.cursor - 1) % #cache.lines.at + 1]
-    set_cursor_pos(menu, cursor_pos[1], cursor_pos[2])
+
+    while self.lines.at[self.position.cursor].type ~= 'provider' do
+        self.position.cursor = self.position.cursor % #self.lines.at + 1
+    end
+
+    self:update_cursor(menu,-1)
     _GAME:SE 'Menu/Skip'
-    return create_display_texts(menu)
+    self:update_text(menu)
 end
 
-local last_dir
-local sound_volume = 1.00
-local inputs = {
-    directions = {
-        [RogueElements.Dir8.Up] = function(menu)
-            if #cache.lines.at > 1 then cache.cursor = (cache.cursor - 2) % #cache.lines.at + 1 else cache.cursor = 1 end
-            ---@type int[]
-            local cursor_pos = cache.lines.at[(cache.cursor - 1) % #cache.lines.at + 1]
-            set_cursor_pos(menu, cursor_pos[1], cursor_pos[2])
-            play_sound('Menu/Select', sound_volume)
-            return create_display_texts(menu)
-        end,
-        [RogueElements.Dir8.Down] = function(menu)
-            if #cache.lines.at > 1 then cache.cursor = cache.cursor % #cache.lines.at + 1 else cache.cursor = 1 end
-            ---@type int[]
-            local cursor_pos = cache.lines.at[(cache.cursor - 1) % #cache.lines.at + 1]
-            set_cursor_pos(menu, cursor_pos[1], cursor_pos[2])
-            play_sound('Menu/Select', sound_volume)
-            return create_display_texts(menu)
+local bindings = {
+    [input_type.Confirm] = function(self, menu, _i)
+        _GAME:SE("Menu/Confirm")
+        local at = self.lines.at[self.position.cursor]
+        if at == nil then return end
+        if at.type == 'component' then
+            prompt_component(self, menu, at.id)
+        else
+            prompt_enabledness(self, menu, at.id):on_resolved(function()
+                self:create_text(menu)
+            end)
         end
-    },
-    bindings = {
-        [input_type.Confirm] = function(menu, _i)
-            _GAME:SE("Menu/Confirm")
-            local at = cache.lines.at[cache.cursor]
-            if at == nil then return end
-            if at.type == 'component' then
-                prompt_component(menu, at.id)
-            else
-                prompt_enabledness(menu, at.id):on_resolved(function()
-                    create_lines()
-                    cache.pending_update = create_display_texts(menu)
-                end)
-            end
-        end,
-        [input_type.LeaderSwap1] = jump_to_previous_provider,
-        [input_type.LeaderSwap2] = jump_to_next_provider,
-        [input_type.LeaderSwapBack] = jump_to_previous_provider,
-        [input_type.LeaderSwapForth] = jump_to_next_provider
-    }
+    end,
+    [input_type.LeaderSwap1] = jump_to_previous_provider,
+    [input_type.LeaderSwap2] = jump_to_next_provider,
+    [input_type.LeaderSwapBack] = jump_to_previous_provider,
+    [input_type.LeaderSwapForth] = jump_to_next_provider
 }
 
 local __Keys = luanet.namespace 'Microsoft.Xna.Framework.Input' .Keys
-local SDL = luanet.namespace 'SDL2' .SDL
+function state:update(menu, input)
+    if input:BaseKeyDown(__Keys.LeftControl) and input:BaseKeyPressed(__Keys.C) then
+        local at = self.lines.at[self.position.cursor]
+        local key = string.format('pmdorand/%s:%s', at.type, at.id)
+        if key == nil then return _GAME:SE 'Menu/Cancel' end
+        clipboard.copy_text(key)--SDL.SDL_SetClipboardText(key)
+        _GAME:SE 'Menu/Sort'
+        return
+    end
 
-return {
-    name = select(2, RogueEssence.Text.Strings:TryGetValue('pmdorand:tab.components')) or 'pmdorand:tab.components',
-    ---@param menu pmdorand.ui.root
-    entered = function(menu)
-        create_lines()
-        ---@type int[]
-        local cursor_pos = cache.lines.at[(cache.cursor - 1) % #cache.lines.at + 1]
-        set_cursor_pos(menu, cursor_pos[1], cursor_pos[2])
-        return create_display_texts(menu)
-    end,
-    ---@param menu pmdorand.ui.root
-    left = function(menu)
-
-    end,
-    ---@param menu pmdorand.ui.root
-    input = function(menu, input)
-        if input:BaseKeyDown(__Keys.LeftControl) and input:BaseKeyPressed(__Keys.C) then
-            local at = cache.lines.at[cache.cursor]
-            local key = string.format('pmdorand/%s:%s', at.type, at.id)
-            if key == nil then return _GAME:SE 'Menu/Cancel' end
-            SDL.SDL_SetClipboardText(key)
-            _GAME:SE 'Menu/Sort'
-            return
-        end
-
-        for i, k in pairs(inputs.bindings) do
-            if input:JustPressed(i) then
-                menu.elements.cursor:ResetTimeOffset()
-                return k(menu, input)
-            end
-        end
-        local pending
-        if inputs.directions[input.Direction] and menu.state.input_debounce == 0 then
+    for i, k in pairs(bindings) do
+        if input:JustPressed(i) then
             menu.elements.cursor:ResetTimeOffset()
-            if input.Direction == last_dir then
-                sound_volume = sound_volume - (sound_volume * 0.05)
-            else
-                sound_volume = 1
-            end
-            pending = inputs.directions[input.Direction](menu, input)
-            menu.state.input_debounce = input.Direction == last_dir and 6 or 18
-        end
-        last_dir = input.Direction
-
-        if pending then
-            return pending
-        elseif cache.pending_update then
-            local out = cache.pending_update
-            cache.pending_update = nil
-            return out
+            return k(self, menu, input)
         end
     end
-}
+end
+
+function state:left(menu) end
+
+function state:move(menu, dy)
+    self.position.cursor = self.position.cursor + dy
+    self:update_cursor(menu, dy)
+
+    self:update_text(menu)
+    play_sound('Menu/Select', menu.input.sound_volume, math.random() * (1/12) - (1/24))
+end
+
+local public = {}
+function public.new()
+    return setmetatable({
+        position = {
+            cursor = 1,
+            height = 0
+        }
+    }, state)
+end
+return public

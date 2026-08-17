@@ -20,5 +20,4 @@ interlace.dependency_test()
 
 -- test code
 local conf = require 'pmdorand.randomizer.cache.configurations'
-conf.construct_defaults()
-conf.save('test')
+conf.initial_load()

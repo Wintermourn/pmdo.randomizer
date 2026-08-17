@@ -3,6 +3,7 @@ local config = require 'pmdorand.config'
 local math_util = require 'pmdorand.util.math'
 
 component.builder()
+    :mark_not_implemented()
     :with_id 'intrinsic.effects'
     :associate_random 'intrinsic.effects'
     :default_enabledness ( false )

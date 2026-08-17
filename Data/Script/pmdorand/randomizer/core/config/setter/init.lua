@@ -10,6 +10,7 @@
 ---@field value any
 ---@field value_pointer {[1]: table, [2]: any} Provides the owner of the config value, to allow changing it more permanently in case of non-object values.
 ---@field translation_key string
+---@field documentation_key string
 ---@field push fun(entry: pmdorand.config.entry) Moves the menu into this entry.
 ---@field set fun(entry: pmdorand.config.entry, value: any)
 ---Updates body texts.

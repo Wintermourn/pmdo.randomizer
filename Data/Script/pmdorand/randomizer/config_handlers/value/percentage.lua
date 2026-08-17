@@ -17,7 +17,7 @@ return setter.builder() --[[@as ConfigSetterBuilder<Config.Percentage>]]
         entry:set(math.max(0, math.min(1, entry.value + math.floor(step * 10)/1000)))
 
         if #entry.texts > 1 then
-            entry.texts[2][1] = displays:get 'Config.Percentage' .display(entry.setting, entry.value)
+            entry.texts[2][1] = displays:get 'Config.Percentage' .display(entry.setting, entry.value, entry)
         end
         return true
     end)

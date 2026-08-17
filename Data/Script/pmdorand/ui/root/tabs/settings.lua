@@ -1,22 +1,39 @@
-local component_registry = require 'pmdorand.randomizer.core.registry' .get 'components'
-local provider_registry = require 'pmdorand.randomizer.core.registry' .get 'providers'
-local strings = {
+local play_sound = require 'pmdorand.util.play_sound'
+local text_pool = require 'pmdorand.util.text_pool'
+
+local info = {
+    title = STRINGS:FormatKey 'pmdorand:tab/settings'
 }
 
-return {
-    name = STRINGS:FormatKey 'pmdorand:tab.settings',
-    ---@param menu pmdorand.ui.root
-    entered = function(menu)
-        menu.elements.cursor.Loc = RogueElements.Loc(11, menu.menu.Bounds.Height--[[@as int]] - 33)
-        return {
-        }
-    end,
-    ---@param menu pmdorand.ui.root
-    left = function(menu)
-
-    end,
-    ---@param menu pmdorand.ui.root
-    input = function(menu, input)
-
-    end
+local state = {
+    info = info,
+    position = {},
+    lines = {}
 }
+state.__index = state
+
+function state:entered(menu)
+    self.position = {
+        cursor = 1,
+        height = 0
+    }
+
+    text_pool.hide_all(menu.menu, menu.elements.pool)
+end
+
+function state:update(menu, input)
+
+end
+
+function state:left(menu) end
+
+function state:move(menu, dy)
+    self.position.cursor = self.position.cursor + dy
+    play_sound('Menu/Select', menu.input.sound_volume, math.random() * (1/12) - (1/24))
+end
+
+local public = {}
+function public.new()
+    return setmetatable({}, state)
+end
+return public

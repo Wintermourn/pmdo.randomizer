@@ -24,7 +24,7 @@ end
 
 ---@return Config.Percentage
 function per.new(default, step)
-    return setmetatable({default = default or 20, step_size = step or 0.01}, per)
+    return setmetatable({default = default or 0.20, step_size = step or 0.01}, per)
 end
 
 return per.new

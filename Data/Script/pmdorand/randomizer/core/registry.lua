@@ -90,7 +90,8 @@ end
 ---@return pmdorand.registry<any>
 ---@overload fun(name: 'providers'): pmdorand.registry<pmdorand.provider<any>>
 ---@overload fun(name: 'components'): pmdorand.registry<pmdorand.component>
----@overload fun(name: 'config.display'): pmdorand.registry<pmdorand.config.display>
+---@overload fun(name: 'config.display'): pmdorand.registry<pmdorand.config.display<any>>
+---@overload fun(name: 'config.documentation'): pmdorand.registry<pmdorand.config.documentation<any>>
 ---@overload fun(name: 'config.setter'): pmdorand.registry<pmdorand.config.setter<any>>
 function public.get(name)
     return registries[name]
