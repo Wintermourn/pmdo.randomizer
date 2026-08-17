@@ -127,7 +127,7 @@
   <data name="pmdorand/documentation:config.percentage">
     <value>
       - Default: %d
-      Represents a percentage, typically from 0 - 100%%. Typically used to roll probabilities or decide thresholds.
+      Represents a percentage between 0 and 100%%. Typically used to roll probabilities or decide thresholds.
     </value>
   </data>
 
