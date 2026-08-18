@@ -2,7 +2,6 @@ local base = require 'pmdorand.config.base'
 
 ---@class Config.Table : Config.Base
 ---@operator bor(Config.Base): Config.Any
---- Automatic type for tables used in config data.
 local tbl = base.extend("Config.Table")
 tbl.content = {}
 ---@type string?
@@ -10,6 +9,7 @@ tbl.name = nil
 
 local blank = {}
 
+---@return table
 function tbl:get_default_value()
     local v = {}
     for i,k in pairs(self.content) do
@@ -19,20 +19,19 @@ function tbl:get_default_value()
 end
 
 function tbl:validate(t, enforce)
-    for i,k in pairs(t) do
-
-        if not self.content[i] then
-            print('Unknown key for table entry: '.. i)
-        end
-        
-        ---@type Config.Base
-        local child = self.content[i]
-        if child ~= nil then
-            local res, msg = child:validate(k, enforce)
-            -- propagate invalid results
-            if res == false then return false, ('Validation failed in table entry \'%s\': "%s"'):format(i, msg) end
+    local entry, success, message
+    for i,k in pairs(self.content) do
+        entry = t[i]
+        if entry == nil then
+            t[i] = k:get_default_value()
+            goto continue
         end
 
+        success, message = k:validate(t[i], enforce)
+        if not success then
+            return false, ('Validation failed in table entry \'%s\': "%s"'):format(i, message)
+        end
+        ::continue::
     end
     return true
 end

@@ -2,6 +2,8 @@ local component = require 'pmdorand.randomizer.core.component'
 local config = require 'pmdorand.config'
 local math_util = require 'pmdorand.util.math'
 
+local data_type = RogueEssence.Data.DataManager.DataType
+
 component.builder()
     :mark_not_implemented()
     :with_id 'monster.skills'
@@ -10,8 +12,8 @@ component.builder()
     :using_provider 'monsters'
     :with_dependencies()
     :with_settings {
-        maximum_moves   = config.integer(20, 1, 50),
-        stab_leaning    = config.custom_display(
+        maximum_moves       = config.integer(20, 1, 50),
+        stab_leaning        = config.custom_display(
             config.float(0.0, -1.0, 1.0, 0.01),
             function(val)
                 if type(val) ~= 'number' then return tostring(val) end
@@ -24,16 +26,19 @@ component.builder()
                 return '0%'
             end
         ),
-        starting_moves  = config.feature {
+        supplementary_types = config.feature {
+            maximum                 = config.dynamic_int(1, 1, 10):dynamic_max(function(self, manager) return _DATA.DataIndices[data_type.Element].Count end)
+        },
+        starting_moves      = config.feature {
             minimum_moves           = config.integer(4, 1, 50),
             minimum_attacking_moves = config.integer(2, 0, 50)
         },
-        learnset        = config.feature {
+        learnset            = config.feature {
             shuffle_existing        = config.boolean(false),
             minimum_spacing         = config.integer(1, 0, 99),
             level_weighting         = config.null()
         },
-        type_matching   = config.feature {
+        type_matching       = config.feature {
             target_rate             = config.percentage(0.20),
             mismatch_limit          = config.percentage(0.90)
         }

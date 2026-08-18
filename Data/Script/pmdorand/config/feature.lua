@@ -9,8 +9,8 @@ local base = require 'pmdorand.config.base'
 ---@field sorted_keys {[string]: integer}?
 ---@field ordered_keys string[]
 local ftr = base.extend("Config.Feature")
----@type {[string|number]: Config.Base}
-ftr.content = {}
+---@type Config.Table
+ftr.options = nil
 ---@type string?
 ftr.name = nil
 
@@ -54,38 +54,48 @@ local function order_keys(conf, tbl)
     return keys
 end
 
+---@return table
 function ftr:get_default_value()
-    local v = {}
+    local v = self.options:get_default_value()
     local root = {options = v}
     for i in pairs(required_fields) do
         root[i] = self[i]:get_default_value()
     end
-    local has_fields = false
-    for i,k in pairs(self.content) do
-        v[i] = k:get_default_value()
-        has_fields = true
-    end
-    if not has_fields then setmetatable(v, options_mt) end
+    setmetatable(v, options_mt)
     return setmetatable(root, root_mt)
 end
 
 function ftr:validate(t, enforce)
-    for i,k in pairs(t) do
-
-        if required_fields[i] and required_fields[i](k) then goto continue end
-
-        if not self.content[i] then
-            print('Unknown key for table entry: '.. i)
+    for i,k in pairs(required_fields) do
+        if k(t[i]) then
+            if t[i] ~= nil then
+                return false, ('Invalid value for required feature entry \'%s\''):format(i) 
+            else
+                t[i] = self[i]:get_default_value()
+            end
         end
-        
-        local child = self.content[i]
-        if child ~= nil then
-            local res, msg = child:validate(k, enforce)
-            -- propagate invalid results
-            if res == false then return false, ('Validation failed in table entry \'%s\': "%s"'):format(i, msg) end
-        end
-        ::continue::
+    end
+    if t.options then
+        local entry, success, message
+        for i,k in pairs(self.options.content) do
+            entry = t.options[i]
+            if entry == nil then
+                t.options[i] = k:get_default_value()
+                goto continue
+            end
 
+            success, message = k:validate(t.options[i], enforce)
+            if not success then
+                return false, ('Validation failed in table entry \'%s\': "%s"'):format(i, message)
+            end
+            ::continue::
+        end
+    else
+        local o = {}
+        for i,k in pairs(self.options.content) do
+            o[i] = k:get_default_value()
+        end
+        t.options = o
     end
     return true
 end
@@ -94,7 +104,7 @@ function ftr:stringify()
     if self.name then return ('"%s"'):format(self.name) end
     local samples = ""
     local i = 0
-    for k, v in pairs(self.content) do
+    for k, v in pairs(self.options) do
         if i == 2 or #samples > 30 then samples = samples ..', ... ' break end
         samples = samples .. ("%s%s = %s"):format(i > 0 and ', ' or '', k, tostring(v))
         i = i + 1
@@ -104,7 +114,7 @@ end
 
 ---@return Config.Feature
 function ftr:with_name(name)
-    local o = {name = name, content = self.content, sorted_keys = self.sorted_keys, ordered_keys = self.ordered_keys}
+    local o = {name = name, options = self.options, sorted_keys = self.sorted_keys, ordered_keys = self.ordered_keys}
     for i in pairs(required_fields) do
         o[i] = self[i]
     end
@@ -118,8 +128,8 @@ function ftr:with_sorted_keys(keys)
     for i, k in ipairs(keys) do
         reversed[k] = i
     end
-    local o = {name = self.name, content = self.content, sorted_keys = reversed}
-    o.ordered_keys = order_keys(o, self.content)
+    local o = {name = self.name, options = self.options, sorted_keys = reversed}
+    o.ordered_keys = order_keys(o, self.options.content)
     for i in pairs(required_fields) do
         o[i] = self[i]
     end
@@ -130,7 +140,7 @@ end
 ---@param default_enabled boolean|number?
 ---@param default_rate number?
 ---@return Config.Feature
-function ftr.from(default_enabled, default_rate, table, sorted_keys)
+function ftr.from(default_enabled, default_rate, table)
     if (getmetatable(table) or {}).__title == ftr.__title then return table --[[@as Config.Feature]] end
     ---@type {[string]: Config.Base}
     local out = {}
@@ -147,15 +157,15 @@ function ftr.from(default_enabled, default_rate, table, sorted_keys)
     end
     if default_enabled == nil then default_enabled = true end
     local conf = {
-        enabled = config.boolean(default_enabled):permit_boolable(true), randomization_chance = config.percentage(default_rate or 1.00, 0.01), content = out
+        enabled = config.boolean(default_enabled):permit_boolable(true), randomization_chance = config.percentage(default_rate or 1.00, 0.01), options = config.table(out)
     }
     conf.ordered_keys = order_keys(conf, out)
     return setmetatable(conf, ftr)
 end
 
 ---@return Config.Feature
-function ftr.new(content, default_enabled, default_rate)
-    return ftr.from(default_enabled, default_rate, content)
+function ftr.new(options, default_enabled, default_rate)
+    return ftr.from(default_enabled, default_rate, options)
 end
 
 return ftr.new

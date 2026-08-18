@@ -7,7 +7,8 @@ local int = base.extend("Config.DynamicInteger")
 int.minimum = 0
 int.maximum = 50
 int.default = 20
-int.should_clamp = false
+---@type int?
+int.jump_size = nil
 
 ---@return integer
 function int:get_default_value()
@@ -24,28 +25,34 @@ function int:get_minimum_value()
     return self.minimum
 end
 
---- ! todo: buh
+---@return integer?
+function int:get_jump_size()
+    return self.jump_size
+end
+
 ---@param fn fun(self: self, manager: any): integer
 function int:dynamic_default(fn)
     self.get_default_value = fn
     return self
 end
 
---- ! todo: buh
 ---@param fn fun(self: self, manager: any): integer
 function int:dynamic_min(fn)
     self.get_minimum_value = fn
     return self
 end
 
---- ! todo: buh
 ---@param fn fun(self: self, manager: any): integer
 function int:dynamic_max(fn)
     self.get_maximum_value = fn
     return self
 end
 
-function int:clamp() self.should_clamp = true; return self end
+---@param fn fun(self: self, manager: any): integer?
+function int:dynamic_jump_size(fn)
+    self.get_jump_size = fn
+    return self
+end
 
 function int:validate(t, enforce)
     if type(t) ~= 'number' then return false, ('Value is not integer (got \'%s\')'):format(type(t)) end

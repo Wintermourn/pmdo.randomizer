@@ -164,7 +164,7 @@ function public.open()
         set_cursor_pos = set_cursor_pos
     }
 
-    for i, k in ipairs(global_state.tabs) do print(type(k), i, k) state.tabs[i] = k.new() end
+    for i, k in ipairs(global_state.tabs) do state.tabs[i] = k.new() end
 
     local ww, wh = graphics.get_screen_dimensions()
     local mw, mh = math.floor(ww * 0.7), wh - 16

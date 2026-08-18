@@ -29,6 +29,7 @@ stat.config = {
     originalPull = 1.00
 }
 
+---@return {minimum: int, maximum: int, range: {mode: 'r'|'e'|'a', value: int}, originalPull: number}
 function stat:get_default_value()
     return {
         minimum = self.config.minimum, maximum = self.config.maximum,
@@ -47,7 +48,7 @@ function stat:validate(v, enforce)
         if v.minimum < 0 then return false, 'Stat minimum must be positive or zero' end
     end
     if v.maximum < v.minimum then v.maximum = v.minimum end
-    if v.range.range < 0 then v.range.range = v.range.range * -1 end
+    if v.range.value < 0 then v.range.value = v.range.value * -1 end
     if not modes[string.lower(v.range.mode)] then v.range.mode = modes.raw end
     return true
 end

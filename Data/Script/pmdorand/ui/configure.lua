@@ -154,10 +154,12 @@ local entry_fetch = {
             translation_keys[out_key] = 'pmdorand/settings:feature/'.. key
             documentation_keys[out_key] = 'pmdorand/documentation:feature/'.. key
         end
+
+        local options = struct.options
         for _, key in ipairs(struct.ordered_keys) do
-            out_key = data_key({'content', key}, {'options', key})
+            out_key = data_key({'options', 'content', key}, {'options', key})
             keys[#keys + 1] = out_key
-            configs[out_key] = struct.content[key]
+            configs[out_key] = options.content[key]
             values[out_key] = vals.options[key]
             value_pointers[out_key] = {vals.options, key}
         end
