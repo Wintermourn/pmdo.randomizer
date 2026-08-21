@@ -11,8 +11,9 @@ component.builder()
     :default_enabledness ( false )
     :using_provider 'monsters'
     :with_dependencies()
+        :after 'monster.typing' :is 'soft'
     :with_settings {
-        maximum_moves       = config.integer(20, 1, 50),
+        maximum_moves       = config.dynamic_int(20, 1, 50, 5):dynamic_max(function() return _DATA.DataIndices[data_type.Skill].Count end),
         stab_leaning        = config.custom_display(
             config.float(0.0, -1.0, 1.0, 0.01),
             function(val)
@@ -27,7 +28,13 @@ component.builder()
             end
         ),
         supplementary_types = config.feature {
-            maximum                 = config.dynamic_int(1, 1, 10):dynamic_max(function(self, manager) return _DATA.DataIndices[data_type.Element].Count end)
+            maximum                 = config.dynamic_int(1, 1, 10):dynamic_max(function() return _DATA.DataIndices[data_type.Element].Count end),
+            bias                    = config.float(0, 0, 5, 0.2),
+            frequency               = config.percentage(0.25, 0.01),
+            global_types            = config.limited_list( {'normal'}, function(t)
+                if type(t) ~= 'string' then return false end
+                return (_DATA.DataIndices[data_type.Element]:TryGetValue(t))
+            end)
         },
         starting_moves      = config.feature {
             minimum_moves           = config.integer(4, 1, 50),
@@ -37,10 +44,6 @@ component.builder()
             shuffle_existing        = config.boolean(false),
             minimum_spacing         = config.integer(1, 0, 99),
             level_weighting         = config.null()
-        },
-        type_matching       = config.feature {
-            target_rate             = config.percentage(0.20),
-            mismatch_limit          = config.percentage(0.90)
         }
     }
     :sorted_keys {
@@ -48,8 +51,22 @@ component.builder()
         'stab_leaning',
         'starting_moves',
         'learnset',
-        'type_matching'
+        'supplementary_types'
     }
+    :pre_pass(function(state)
+        -- collapse dynamic features
+        local conf = state:get_config()
+        local random = state:get_random()
+        local feature_config
+        for _, feature in ipairs {'supplementary_types', 'starting_moves', 'learnset'} do
+            ---@type {enabled: boolean|number}
+            feature_config = conf[feature]
+            if type(feature_config.enabled) == 'number' then
+                feature_config.enabled = random:bool(feature_config.enabled)
+                print(string.format("feature %s has collapsed to '%s'", feature, feature_config.enabled))
+            end
+        end
+    end)
     :on_step(function(id, data, state)
     end)
     :register()

@@ -1,5 +1,5 @@
 local documentation = require 'pmdorand.randomizer.core.config.documentation'
-local soft_translate = require 'Data.Script.pmdorand.util.soft_translate'
+local soft_translate = require 'pmdorand.util.soft_translate'
 
 local name = STRINGS:FormatKey 'pmdorand:config.enum'
 local body = STRINGS:FormatKey 'pmdorand/documentation:config.enum' :match '^%s*(.-)%s*$'

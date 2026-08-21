@@ -40,4 +40,12 @@ function helpers.pad_start(s, len, pad)
     return padding .. s
 end
 
+function helpers.tostring_quot(v)
+    if type(v) == 'string' then
+        return string.format('"%s"', v)
+    else
+        return tostring(v)
+    end
+end
+
 return helpers

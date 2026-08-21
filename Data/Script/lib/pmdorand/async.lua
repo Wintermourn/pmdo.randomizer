@@ -95,7 +95,7 @@ end
 
 ---@param fn async fun(...)
 function _promise:on_resolved(fn)
-    if self.finished and self.resolved then fn(unpack(self.return_values or blank)); return end
+    if self.finished and self.resolved then fn(unpack(self.return_values or blank)); return self end
     local on_res = self.subscribers.on_resolved
     on_res[#on_res + 1] = fn
     return self
@@ -103,7 +103,7 @@ end
 
 ---@param fn async fun(...)
 function _promise:on_rejected(fn)
-    if self.finished and not self.resolved then fn(unpack(self.return_values or blank)); return end
+    if self.finished and not self.resolved then fn(unpack(self.return_values or blank)); return self end
     local on_res = self.subscribers.on_rejected
     on_res[#on_res + 1] = fn
     return self

@@ -3,6 +3,15 @@ local state_cache = require 'pmdorand.randomizer.cache.states'
 local random_cache = require 'pmdorand.randomizer.cache.random'
 local pass = require 'pmdorand.randomizer.core.pass'
 local components = require 'pmdorand.randomizer.core.registry' .get 'components'
+local provider_state = require 'pmdorand.randomizer.core.states.provider'
+
+local interlace = require 'lib.pmdorand.interlace'
+local IO = luanet.namespace 'System.IO'
+local default_path = IO.Path.Combine(
+    RogueEssence.PathMod.APP_PATH,
+    interlace.get_mod_by_namespace ('pmdorand') --[[@as -nil]] .Path,
+    _DATA.DATA_PATH
+)
 
 local manager = {
     ---@type string?
@@ -11,6 +20,7 @@ local manager = {
     is_generating = false,
     ---@type pmdorand.pass.manager
     pass_manager = nil,
+    output_path = default_path,
     ---@type Async.Promise?
     promise = nil,
     subscribers = {
@@ -45,6 +55,7 @@ function public.get_error()
     return manager.err
 end
 
+---@return pmdorand.manager.state
 function public.get_state()
     if manager.pass_manager == nil then return 0 end
     if manager.err ~= nil then return 3 end
@@ -52,8 +63,12 @@ function public.get_state()
     return 2
 end
 
----@return int
----@return int
+function public.get_output_path()
+    return manager.output_path
+end
+
+---@return int minimum
+---@return int maximum
 function public.get_enabled_count()
     local min, max = 0, 0
     local config
@@ -84,6 +99,19 @@ function public.start(dry_run)
 
     local random = random_cache.get_generator()
 
+    if configuration.get().personal.export_to_mod then
+        local mod_id = require 'pmdorand.util.create_mod_skeleton' 'Generated Mod Test'
+        print(mod_id)
+        manager.output_path = IO.Path.Combine(
+            RogueEssence.PathMod.APP_PATH, RogueEssence.PathMod.MODS_FOLDER,
+            mod_id,
+            _DATA.DATA_PATH
+        )
+    else
+        manager.output_path = default_path
+    end
+    provider_state.update_output_path(manager.output_path)
+
     local config
     ---@type pmdorand.component[]
     local active_components = {}
@@ -101,7 +129,7 @@ function public.start(dry_run)
     manager.err = nil
     manager.pass_manager = pass.generate_passes(active_components)
     manager.is_generating = true
-    manager.promise = manager.pass_manager:run(configuration.get().personal.log_spoilers, dry_run):on_resolved(function()
+    manager.promise = manager.pass_manager:run(configuration.get().personal.log_spoilers and IO.Path.Combine(manager.output_path, '..', 'Spoilers'), dry_run):on_resolved(function()
         manager.is_generating = false
         for _, component in ipairs(active_components) do
             if component.post_gen_step then
@@ -114,7 +142,7 @@ function public.start(dry_run)
     end):on_rejected(function(err)
         manager.is_generating = false
         manager.err = err
-        for _, fn in pairs(manager.subscribers.on_success.by_id) do
+        for _, fn in pairs(manager.subscribers.on_failed.by_id) do
             fn()
         end
     end)

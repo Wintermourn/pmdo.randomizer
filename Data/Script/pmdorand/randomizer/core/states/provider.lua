@@ -1,11 +1,4 @@
-local interlace = require 'lib.pmdorand.interlace'
 local IO = luanet.namespace 'System.IO'
-
-local BASE_PATH = IO.Path.Combine(
-    RogueEssence.PathMod.APP_PATH,
-    interlace.get_mod_by_namespace ('pmdorand') --[[@as -nil]] .Path,
-    RogueEssence.Data.DataManager.DATA_PATH
-)
 
 local function create_directory(path)
 
@@ -17,8 +10,10 @@ local provider_state = {
 }
 provider_state.__index = provider_state
 
+local output_path
+
 function provider_state:serialize_jsonpatch(type, key, data)
-    local patch_path = IO.Path.Combine(BASE_PATH, type, key ..'.jsonpatch')
+    local patch_path = IO.Path.Combine(output_path, type, key ..'.jsonpatch')
     ---@diagnostic disable-next-line: param-type-mismatch
     if not IO.Directory.Exists(patch_path) then IO.Directory.CreateDirectory(IO.Path.GetDirectoryName(patch_path)) end
     RogueEssence.Data.Serializer.SerializeDataAsDiff(
@@ -34,7 +29,7 @@ function provider_state:serialize_jsonpatch(type, key, data)
 end
 
 function provider_state:serialize_universal()
-    local file_path = IO.Path.Combine(BASE_PATH, 'Universal.jsonpatch')
+    local file_path = IO.Path.Combine(output_path, 'Universal.jsonpatch')
     ---@diagnostic disable-next-line: param-type-mismatch
     if not IO.Directory.Exists(file_path) then IO.Directory.CreateDirectory(IO.Path.GetDirectoryName(file_path)) end
     RogueEssence.Data.Serializer.SerializeDataAsDiff(
@@ -58,6 +53,12 @@ function public.new()
     }
 
     return setmetatable(o, provider_state)
+end
+
+function public.update_output_path(path)
+    local relative_path = IO.Path.GetRelativePath(RogueEssence.PathMod.APP_PATH, path)
+    if relative_path:find('%.%.') or relative_path == '.' then error("Suspicious output path\n".. relative_path) end
+    output_path = path
 end
 
 return public

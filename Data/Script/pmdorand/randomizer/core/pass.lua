@@ -22,11 +22,12 @@ local pass_manager = {
 }
 pass_manager.__index = pass_manager
 
-function pass_manager:run(generate_spoilers, dry_run)
+---@param spoilers_path string
+function pass_manager:run(spoilers_path, dry_run)
     -- Delete spoilers
-    local path = IO.Path.Combine(RogueEssence.PathMod.APP_PATH, require 'pmdorand.util.header'.Path, 'Spoilers')
+    local path = spoilers_path or IO.Path.Combine(RogueEssence.PathMod.APP_PATH, require 'pmdorand.util.header'.Path, 'Spoilers')
     if IO.Directory.Exists(path) then
-        if generate_spoilers then
+        if spoilers_path then
             for file in luanet.each(IO.Directory.GetFiles(path)) do
                 IO.File.Delete(file)
             end
@@ -41,7 +42,7 @@ function pass_manager:run(generate_spoilers, dry_run)
             for i = 1, #self.passes do
                 self.current_pass = i
                 pass = self.passes[i]
-                pass:run(self, generate_spoilers, dry_run)
+                pass:run(self, spoilers_path, dry_run)
                 if false == false and self.final_provider_pass[pass.provider.id] == i and not dry_run then
                     self.state = ("Saving [%s]..."):format(pass.provider.id)
                     pass.provider:flush_cache()
@@ -62,11 +63,11 @@ pass.__index = pass
 
 ---@async
 ---@param manager pmdorand.pass.manager
-function pass:run(manager, generate_spoilers, dry_run)
-    local spoiler_path = IO.Path.Combine(RogueEssence.PathMod.APP_PATH, require 'pmdorand.util.header'.Path, 'Spoilers')
-    if generate_spoilers then
-        if not IO.Directory.Exists(spoiler_path) then
-            IO.Directory.CreateDirectory(spoiler_path) 
+function pass:run(manager, spoilers_path, dry_run)
+    --local spoiler_path = IO.Path.Combine(RogueEssence.PathMod.APP_PATH, require 'pmdorand.util.header'.Path, 'Spoilers')
+    if spoilers_path then
+        if not IO.Directory.Exists(spoilers_path) then
+            IO.Directory.CreateDirectory(spoilers_path) 
         end
     end
 
@@ -79,8 +80,8 @@ function pass:run(manager, generate_spoilers, dry_run)
     for _, component in ipairs(self.components) do
         local state = state_cache.component(component.id)
         component_states[component.id] = state
-        if generate_spoilers then
-            files[component.id] = io.open(IO.Path.Combine(spoiler_path, component.id ..'.txt'), 'w')
+        if spoilers_path then
+            files[component.id] = io.open(IO.Path.Combine(spoilers_path, component.id ..'.txt'), 'w')
         end
         if component.pre_pass_step then
             component.pre_pass_step(state) 
@@ -119,7 +120,7 @@ function pass:run(manager, generate_spoilers, dry_run)
         end
     end
 
-    if generate_spoilers then
+    if spoilers_path then
         local spoiler_template = "Pass %d [%s]: Spoiling %s ..."
         for _, component in ipairs(self.components) do
             if dry_run then
@@ -178,7 +179,7 @@ function public.generate_passes(enabled_components)
                 table.insert(graph[comp_key], dep_key)
                 table.insert(dependencies[dep_key], comp_key)
                 in_degree[dep_key] = in_degree[dep_key] + 1 
-            else
+            elseif graph[dep_key] then
                 table.insert(graph[dep_key], comp_key)
                 table.insert(dependencies[comp_key], dep_key)
                 in_degree[comp_key] = in_degree[comp_key] + 1

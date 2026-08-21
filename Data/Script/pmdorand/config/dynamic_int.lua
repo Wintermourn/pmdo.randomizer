@@ -69,8 +69,8 @@ function int:stringify()
 end
 
 ---@return Config.DynamicInteger
-function int.new(default, min, max)
-    return setmetatable({default = default or 20, minimum = min or 0, maximum = max or 50}, int)
+function int.new(default, min, max, jump_size)
+    return setmetatable({default = default or 20, minimum = min or 0, maximum = max or 50, jump_size = jump_size}, int)
 end
 
 return int.new

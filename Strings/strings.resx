@@ -58,6 +58,8 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="pmdorand:genmod_description" xml:space="preserve"><value>Generated at {0}.</value></data>
+
   <data name="pmdorand:topmenu" xml:space="preserve"><value>Randomizer</value></data>
   <data name="pmdorand:nyi" xml:space="preserve"><value>[color=#999999]Not Yet Implemented</value></data>
   <data name="pmdorand:nyi.short" xml:space="preserve"><value>[color=#999999](NYI)</value></data>
@@ -278,7 +280,10 @@
   <data name="pmdorand/settings:monster.skills/options.learnset/options.shuffle_existing" xml:space="preserve"><value>Shuffle Existing</value></data>
   <data name="pmdorand/settings:monster.skills/options.learnset/options.minimum_spacing" xml:space="preserve"><value>Minimum Spacing</value></data>
   <data name="pmdorand/settings:monster.skills/options.learnset/options.level_weighting" xml:space="preserve"><value>Level Weighting</value></data>
+  <data name="pmdorand/settings:monster.skills/options.supplementary_types" xml:space="preserve"><value>Supplementary Types</value></data>
   <data name="pmdorand/settings:monster.skills/options.type_matching" xml:space="preserve"><value>Type Matching</value></data>
+  <data name="pmdorand/settings:monster.skills/options.type_matching/options.mismatch_limit" xml:space="preserve"><value>Mismatch Limit</value></data>
+  <data name="pmdorand/settings:monster.skills/options.type_matching/options.target_rate" xml:space="preserve"><value>Target Rate</value></data>
 
   <data name="pmdorand/settings:monster.typing/options.dual_type_chance" xml:space="preserve"><value>Dual Type Chance</value></data>
   <data name="pmdorand/settings:monster.typing/options.retained_type" xml:space="preserve"><value>Retained Type</value></data>
@@ -289,8 +294,6 @@
   <data name="pmdorand/settings:monster.typing/options.selection_rules" xml:space="preserve"><value>Selection Rules</value></data>
   <data name="pmdorand/settings:monster.typing/options.selection_rules/banned_types" xml:space="preserve"><value>Banned Types</value></data>
   <data name="pmdorand/settings:monster.typing/options.selection_rules/enforce_different_types" xml:space="preserve"><value>Enforce Different Types</value></data>
-  <data name="pmdorand/settings:monster.skills/options.type_matching/options.mismatch_limit" xml:space="preserve"><value>Mismatch Limit</value></data>
-  <data name="pmdorand/settings:monster.skills/options.type_matching/options.target_rate" xml:space="preserve"><value>Target Rate</value></data>
   <data name="pmdorand/settings:monster.typing/options.restrictions" xml:space="preserve"><value>Restrictions</value></data>
   <data name="pmdorand/settings:monster.typing/options.restrictions/allow_none" xml:space="preserve"><value>Allow No Type</value></data>
   <data name="pmdorand/settings:monster.typing/options.restrictions/type_effectivity" xml:space="preserve"><value>Effectivity</value></data>
@@ -324,4 +327,11 @@
   <data name="pmdorand/settings:universal.stats/options.natural_regeneration/options.starving" xml:space="preserve"><value>Starving Regeneration</value></data>
 
   <data name="pmdorand/settings:universal.type_matchups/options.symmetrical" xml:space="preserve"><value>Symmetrical Matchups</value></data>
+
+  <data name="pmdorand/documentation:monster.skills/options.supplementary_types">
+    <value>
+      When enabled, non-STAB moves roll between a limited list of selected types.
+      Otherwise, when disabled, non-STAB moves can be any type.
+    </value>
+  </data>
 </root>

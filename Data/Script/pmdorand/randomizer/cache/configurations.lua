@@ -82,7 +82,10 @@ local function make_default( structure )
 end
 
 local function safe_write(path, data)
-
+    local dir = IO.Path.GetDirectoryName(path)
+    if not IO.Directory.Exists(dir) then
+        IO.Directory.CreateDirectory(dir) 
+    end
     if IO.Path.Exists(path) then
         if IO.File.ReadAllText(path) == data then return end
         local temp_path = IO.Path.Combine(IO.Path.GetDirectoryName(path), IO.Path.GetRandomFileName())
@@ -144,15 +147,17 @@ function public.get( identifier )
     return cache.working_copy.components[identifier]
 end
 
+---@param folder string?
 ---@param name string
-function public.save( name, metadata )
-    local save_path = IO.Path.Combine(paths.folder_configs_local, name:gsub(illegalPattern, '_') ..'.yml')
+function public.export( folder, name, metadata )
+    local folder = folder or paths.folder_configs_local
+    local save_path = IO.Path.Combine(folder, name:gsub(illegalPattern, '_') ..'.yml')
     local path = IO.Path.GetFullPath( save_path )
-    if path:sub(1, #paths.folder_configs_local) ~= paths.folder_configs_local then
+    if path:sub(1, #folder) ~= folder then
        return false
     end
-    if not IO.Directory.Exists(paths.folder_configs_local) then
-        IO.Directory.CreateDirectory(paths.folder_configs_local)
+    if not IO.Directory.Exists(folder) then
+        IO.Directory.CreateDirectory(folder)
     end
 
     if metadata == nil then
@@ -181,6 +186,10 @@ function public.save( name, metadata )
             }
         })
     ))
+end
+
+function public.save( name, metadata )
+    public.export( nil, name, metadata )
 end
 
 function public.save_core_settings()

@@ -9,12 +9,14 @@
 ---@field boolean fun(default: boolean|number?): Config.Boolean
 ---Wraps another config value, modifying the bitwise or operator to create a `Config.Variant` instead.
 ---@field case fun(key: string, value: Config.Base): Config.Case
+---Requires an exact, specific value.
+---@field constant fun(value: T): Config.Constant<T>
 ---Wraps another config value, changing how it is displayed in the in-game editor.
 ---@field custom_display fun(setting: Config.Base, display_method: fun(value: any): string): Config.CustomDisplay
 ---Similar to `custom_display`, except that it controls documentation text rather than value displays.<br>
 ---`documentation_method` can be a `string`, where the text is a translation key, or a `function`, where the output is two strings, Name and Body text.
 ---@field custom_documentation fun(setting: Config.Base, documentation_method: string|(fun(structure: Config.Base, value: any, entry: pmdorand.config.entry<Config.Base>): (string, string))): Config.CustomDocumentation
----@field dynamic_int fun(default: integer?, minimum: integer?, maximum: integer?): Config.DynamicInteger
+---@field dynamic_int fun(default: integer?, minimum: integer?, maximum: integer?, jump_size: integer?): Config.DynamicInteger
 ---Only accepts specified values. The default value should match an entry in the list.
 ---@field enum fun(default: any, choices: any[]): Config.Enum
 ---Wraps a table with enabled and randomization chance values, as well as option key sorting. Good for features that can be turned on or off.
@@ -23,6 +25,8 @@
 ---@field float fun(default: number?, minimum: number?, maximum: number?, step_size: number?): Config.Float
 ---Accepts integer numbers.
 ---@field integer fun(default: integer?, minimum: integer?, maximum: integer?, jump_size: integer?): Config.Integer
+---Creates a filtered list that only allows certain entries.
+---@field limited_list fun(default: T[]?, validator: (fun(t: T): boolean)?): Config.LimitedList<T>
 ---Accepts objects with specific, dynamic keys.
 ---@field matchup_table fun(keying_function: (fun(key: string): boolean)?): Config.MatchupTable
 ---Only accepts null. Useful for placeholding.
