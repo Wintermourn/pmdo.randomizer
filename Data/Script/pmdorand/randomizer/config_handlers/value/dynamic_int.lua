@@ -1,5 +1,6 @@
 local setter = require 'pmdorand.randomizer.core.config.setter'
 local displays = require 'pmdorand.randomizer.core.registry' .get 'config.display'
+local math_util = require 'pmdorand.util.math'
 
 local __Input = luanet.namespace 'Microsoft.Xna.Framework.Input'
     local __Keys = __Input.Keys
@@ -14,7 +15,7 @@ return setter.builder() --[[@as ConfigSetterBuilder<Config.DynamicInteger>]]
 
         if input:BaseKeyDown(__Keys.LeftShift) then
             local jump_size = entry.setting:get_jump_size()
-            step = jump_size and math.floor(jump_size * step + 0.5) or (step * math.ceil((upper_bound - lower_bound) / 10) )
+            step = jump_size and math_util.round(jump_size * step) or (step * math.ceil((upper_bound - lower_bound) / 10) )
         end
         entry:set(math.min(upper_bound, math.max(lower_bound, entry.value + step)))
 

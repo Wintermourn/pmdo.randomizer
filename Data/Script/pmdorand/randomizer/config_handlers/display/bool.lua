@@ -1,4 +1,5 @@
 local display = require 'pmdorand.randomizer.core.config.display'
+local math_util = require 'pmdorand.util.math'
 
 local strings = {
     enabled = STRINGS:FormatKey 'pmdorand:enabled',
@@ -18,7 +19,7 @@ return display.builder()
             elseif v > 1 then
                 return strings.enabled
             else
-                return strings.dynamic .. ('[color] (%02d%%)'):format(math.floor(v * 100 + 0.5))
+                return strings.dynamic .. ('[color] (%02d%%)'):format(math_util.round(v * 100))
             end
         end
     end)

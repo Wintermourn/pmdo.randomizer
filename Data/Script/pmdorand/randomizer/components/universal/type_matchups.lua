@@ -1,5 +1,6 @@
 local component = require 'pmdorand.randomizer.core.component'
 local config = require 'pmdorand.config'
+local math_util = require 'pmdorand.util.math'
 
 local s = require 'pmdorand.util.string'
 
@@ -8,7 +9,7 @@ local __ElementTableState = luanet.import_type 'PMDC.Dungeon.ElementTableState'
 
 local function element_count_fn() return _DATA.DataIndices[data_type.Element].Count end
 
-local abs, floor = math.abs, math.floor
+local abs, floor, round = math.abs, math.floor, math_util.round
 
 local function scale_to_int(...)
     local args = {...}
@@ -20,7 +21,7 @@ local function scale_to_int(...)
         local scaled = v * multiplier
 
         local val, frac, denominator
-        if abs(scaled - floor(scaled + 0.5)) > 1e-9 then
+        if abs(scaled - round(scaled)) > 1e-9 then
             val = abs(v)
             frac, denominator = val - floor(val), 1
 
@@ -51,7 +52,7 @@ local function scale_to_int(...)
 
     local res = {}
     for i = 1, n do
-        res[i] = floor(args[i] * multiplier + 0.5)
+        res[i] = round(args[i] * multiplier)
     end
     return res, multiplier
 end
@@ -83,7 +84,7 @@ local function calculate_matchup_limit(config, type_count)
     if config.type == 'constant' then
         return config.value
     elseif config.type == 'percentage' then
-        return floor(config.value * type_count + 0.5)
+        return round(config.value * type_count)
     end
 end
 

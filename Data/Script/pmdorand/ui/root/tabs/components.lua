@@ -5,6 +5,7 @@ local clipboard = require 'pmdorand.util.clipboard'
 local component_registry = require 'pmdorand.randomizer.core.registry' .get 'components'
 local configurations = require 'pmdorand.randomizer.cache.configurations'
 local configure = require 'pmdorand.ui.configure'
+local math_util = require 'pmdorand.util.math'
 local play_sound = require 'pmdorand.util.play_sound'
 local soft_translate = require 'pmdorand.util.soft_translate'
 local text_pool = require 'pmdorand.util.text_pool'
@@ -132,7 +133,7 @@ function state:create_text(menu)
             elseif enabledness == false then
                 dynamic_text = strings.disabled
             elseif type(enabledness) == 'number' then
-                dynamic_text = strings.dynamic .. ('[color] (%02d%%)'):format(math.floor(enabledness * 100 + 0.5))
+                dynamic_text = strings.dynamic .. ('[color] (%02d%%)'):format(math_util.round(enabledness * 100))
             end
             if component_registry:get(component_id).not_implemented then
                dynamic_text = string.format("%s %s", strings.nyi, dynamic_text)

@@ -18,7 +18,7 @@ component.builder()
             config.float(0.0, -1.0, 1.0, 0.01),
             function(val)
                 if type(val) ~= 'number' then return tostring(val) end
-                local rounded_val = math.floor(val * 1000 + 0.5) / 10
+                local rounded_val = math_util.round(val * 1000) / 10
                 if rounded_val > 0 then
                     return STRINGS:FormatKey('pmdorand/config:stab_towards'):format(rounded_val)
                 elseif rounded_val < 0 then
