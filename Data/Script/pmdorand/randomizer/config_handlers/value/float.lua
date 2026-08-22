@@ -3,6 +3,7 @@ local displays = require 'pmdorand.randomizer.core.registry' .get 'config.displa
 
 local __Input = luanet.namespace 'Microsoft.Xna.Framework.Input'
     local __Keys = __Input.Keys
+local abs, EPSILON = math.abs, 1e-12
 
 return setter.builder() --[[@as ConfigSetterBuilder<Config.Float>]]
     :with_title 'Config.Float'
@@ -17,7 +18,12 @@ return setter.builder() --[[@as ConfigSetterBuilder<Config.Float>]]
         elseif input:BaseKeyDown(__Keys.LeftControl) then
             step = step / 10
         end
-        entry:set(math.min(upper_bound, math.max(lower_bound, entry.value + step)))
+        local after = entry.value + step
+        if entry.value * after < 0 or abs(after) < EPSILON then
+            entry:set(0)
+        else
+            entry:set(math.min(upper_bound, math.max(lower_bound, after)))
+        end
 
         if #entry.texts > 1 then
             entry.texts[2][1] = displays:get 'Config.Float' .display(entry.setting, entry.value, entry)

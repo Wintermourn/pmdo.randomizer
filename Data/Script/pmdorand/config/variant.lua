@@ -4,7 +4,7 @@ local base = require 'pmdorand.config.base'
 ---@operator bor(Config.Base): Config.Variant
 --- Automatic type for tables used in config data.
 local var = base.extend("Config.Variant")
----@type {[string]: Config.Base}
+---@type {[string]: Config.Base?}
 var.variants = {}
 var.default = ''
 
@@ -12,7 +12,7 @@ var.default = ''
 function var:get_default_value()
     return {
         type = self.default,
-        value = self.variants[self.default]:get_default_value()
+        value = self.variants[self.default] --[[@cast -?]]:get_default_value()
     }
 end
 

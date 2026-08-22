@@ -6,6 +6,8 @@ local state_cache = require 'pmdorand.randomizer.cache.states'
 local random_cache = require 'pmdorand.randomizer.cache.random'
 local async = require 'lib.pmdorand.async'
 
+local collapse_features = require 'pmdorand.util.collapse_features'
+
 local IO = luanet.namespace 'System.IO'
 local __Environment = luanet.import_type 'System.Environment'
 
@@ -82,6 +84,9 @@ function pass:run(manager, spoilers_path, dry_run)
         component_states[component.id] = state
         if spoilers_path then
             files[component.id] = io.open(IO.Path.Combine(spoilers_path, component.id ..'.txt'), 'w')
+        end
+        if component.settings then
+            collapse_features(component.settings.options, state:get_config(), state:get_random(), component.id)
         end
         if component.pre_pass_step then
             component.pre_pass_step(state) 

@@ -53,7 +53,7 @@ component.builder()
         'learnset',
         'supplementary_types'
     }
-    :pre_pass(function(state)
+    --[[ :pre_pass(function(state)
         -- collapse dynamic features
         local conf = state:get_config()
         local random = state:get_random()
@@ -66,7 +66,7 @@ component.builder()
                 print(string.format("feature %s has collapsed to '%s'", feature, feature_config.enabled))
             end
         end
-    end)
+    end) ]]
     :on_step(function(id, data, state)
     end)
     :register()

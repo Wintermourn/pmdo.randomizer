@@ -23,10 +23,14 @@
 ---@field feature fun(entries: Config.FromTable, enabled: boolean|number?, randomization_chance: number?, sorted_keys: string[]?): Config.Feature
 ---Accepts decimal numbers.
 ---@field float fun(default: number?, minimum: number?, maximum: number?, step_size: number?): Config.Float
+---Wraps another config value. When an input is passed, this forces the entire interface to update. Useful for settings that have visuals which rely on each other.
+---@field force_update fun(setting: Config.Base): Config.ForceUpdate
 ---Accepts integer numbers.
 ---@field integer fun(default: integer?, minimum: integer?, maximum: integer?, jump_size: integer?): Config.Integer
 ---Creates a filtered list that only allows certain entries.
 ---@field limited_list fun(default: T[]?, validator: (fun(t: T): boolean)?): Config.LimitedList<T>
+---Creates a list that only allows a certain type or config value.
+---@field list fun(type: type|Config.Base?, default: T[]?): Config.List<T>
 ---Accepts objects with specific, dynamic keys.
 ---@field matchup_table fun(keying_function: (fun(key: string): boolean)?): Config.MatchupTable
 ---Only accepts null. Useful for placeholding.

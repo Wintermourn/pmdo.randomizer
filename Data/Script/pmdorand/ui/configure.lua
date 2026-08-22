@@ -201,15 +201,15 @@ local function update_contents(state)
 
     local entry, translation_key, documentation_key
     for i, key in ipairs(keys) do
-        translation_key = translation_keys[key] or compile_translation_key(state, key.value.flat)
-        documentation_key = documentation_keys[key] or compile_documentation_key(state, key.value.flat)
+        translation_key = translation_keys[key] or compile_translation_key(state, key.value[#key.value])
+        documentation_key = documentation_keys[key] or compile_documentation_key(state, key.value[#key.value])
         entry = {
             texts = {
                 {RogueEssence.Text.Strings:ContainsKey(translation_key) and STRINGS:FormatKey(translation_key) or translation_key, 12, (i - 1) * 12},
                 {'', -2, (i - 1) * 12, RogueElements.DirH.Right}
             },
             setting = configs[key], value = values[key], keys = key, value_pointer = value_pointers[key], translation_key = translation_key, documentation_key = documentation_key,
-            push = state.entry_push, set = entry_set_value, update_text = state.entry_update_body
+            push = state.entry_push, set = entry_set_value, update_text = state.entry_update_body, full_update_text = state.entry_update_contents
         }
         entry.texts[2][1] = displays:get(configs[key].__title).display(configs[key], values[key], entry --[[@as pmdorand.config.entry<any>]])
         by_index[#by_index + 1] = entry
@@ -460,12 +460,13 @@ function public.open(component, user_settings)
         current_values = current_values
     }
     state.entry_push = function(entry)
-        push(state, entry.keys.value.flat, entry.setting, entry.value, entry.translation_key)
+        push(state, entry.keys.value[#entry.keys.value], entry.setting, entry.value, entry.translation_key)
         update_title(state)
         update_contents(state)
         update_body(state)
     end
     state.entry_update_body = function() update_body(state) end
+    state.entry_update_contents = function() update_contents(state) end
 
     push(state, component.id, component.settings, user_settings, 'pmdorand/component:'.. component.id)
 

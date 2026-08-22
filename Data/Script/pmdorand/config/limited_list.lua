@@ -1,5 +1,9 @@
 local base = require 'pmdorand.config.base'
 
+--[[
+    Todo: add a function that returns all valid entries
+]]
+
 ---@class Config.LimitedList<T> : Config.Base
 ---@field default T[]?
 ---@field validator (fun(t: T): boolean)?
@@ -72,7 +76,7 @@ function limlist:with_validator(fn)
     return setmetatable({default = self.default, validator = fn}, limlist)
 end
 
----@return Config.Any
+---@return Config.LimitedList<unknown>
 function limlist.new(default, validator)
     return setmetatable({default = default, validator = validator}, limlist)
 end

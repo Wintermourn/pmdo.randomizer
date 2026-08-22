@@ -19,8 +19,7 @@ function float:clamp_value(v)
 end
 
 function float:validate(t, enforce)
-    if type(t) ~= 'number' then return false, ('Value is not integer (got \'%s\')'):format(type(t)) end
-    if t % 1 ~= 0 then return false, ('Value is not integer (has decimal)') end
+    if type(t) ~= 'number' then return false, ('Value is not a number (got \'%s\')'):format(type(t)) end
     if enforce then
         local min, max = self.minimum, self.maximum
         if enforce and (t < min or t > max) then print(('Value is outside reasonable bounds (expected [%d, %d], got %f)'):format(min, max, t)) end

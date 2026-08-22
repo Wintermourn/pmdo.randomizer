@@ -16,6 +16,8 @@
 ---Updates body texts.
 ---<br>Since updates are automatically handled after setter calls finish, this is best used if the update has to be deferred for some reason (e.g. showing a prompt).
 ---@field update_text fun()
+---Forces all text to update.
+---@field full_update_text fun()
 
 ---@class pmdorand.config.entry.keys
 ---@field config string[]|{flat: string}
