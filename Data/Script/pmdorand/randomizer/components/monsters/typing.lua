@@ -68,10 +68,10 @@ local element_keys = {
     'Element2'
 }
 
----@type {[1|2|3]: (fun(form, state: pmdorand.state.component, conf, random: pmdorand.random, allowed_types: {by_index: string[], by_name: {[string]: int}}, unlocked_index: false|1|2, locked_element: string?, unlocked_element: string?))}
+---@type {[1|2|3]: (fun(form, state: pmdorand.state.component, conf, random: pmdorand.random, allowed_types: {by_index: string[], by_name: {[string]: int}}, unlocked_index: false|1|2, locked_element: string?))}
 local te_methods = {
     -- First vs. Second
-    function(form, state, conf, random, allowed_types, unlocked_index, locked_element, unlocked_element)
+    function(form, state, conf, random, allowed_types, unlocked_index, locked_element)
         if locked_element then
             ---@cast unlocked_index -?
             local selections = state.data[unlocked_index == 1 and "defenders" or "attackers"]
@@ -89,7 +89,7 @@ local te_methods = {
                 end
             end
         else
-            local has_second_type = unlocked_element ~= 'none' or random:bool(conf.dual_type_chance)
+            local has_second_type = form[element_keys[2]] ~= 'none' or random:bool(conf.dual_type_chance)
 
             local pool = {}
             for i = 1, #allowed_types.by_index do
@@ -132,7 +132,7 @@ local te_methods = {
         end
     end,
     -- Second vs. First
-    function(form, state, conf, random, allowed_types, unlocked_index, locked_element, unlocked_element)
+    function(form, state, conf, random, allowed_types, unlocked_index, locked_element)
         if locked_element then
             ---@cast unlocked_index -?
             local selections = state.data[unlocked_index == 2 and "defenders" or "attackers"]
@@ -150,7 +150,7 @@ local te_methods = {
                 end
             end
         else
-            local has_second_type = unlocked_element ~= 'none' or random:bool(conf.dual_type_chance)
+            local has_second_type = form[element_keys[2]] ~= 'none' or random:bool(conf.dual_type_chance)
 
             local pool = {}
             for i = 1, #allowed_types.by_index do
@@ -193,7 +193,7 @@ local te_methods = {
         end
     end,
     -- Both vs. Random
-    function(form, state, conf, random, allowed_types, unlocked_index, locked_element, unlocked_element)
+    function(form, state, conf, random, allowed_types, unlocked_index, locked_element)
         local selections = state.data.defenders
         if locked_element then
             local potential_targets = state.data.attackers[locked_element]
@@ -230,7 +230,7 @@ local te_methods = {
                 form[element_keys[unlocked_index]] = allowed_types.by_index[random:next_integer(1, #allowed_types.by_index)]
             end
         else
-            local has_second_type = unlocked_element ~= 'none' or random:bool(conf.dual_type_chance)
+            local has_second_type = form[element_keys[2]] ~= 'none' or random:bool(conf.dual_type_chance)
 
             local pool = {}
             local requires_multiple = has_second_type and conf.restrictions.enforce_different_types
@@ -379,7 +379,7 @@ component.builder()
                 local method = te_methods[te_conf.mode]
                 ---@diagnostic disable-next-line: unnecessary-if
                 if method then
-                    method(form, state, conf, random, allowed_types, unlocked_element_index, locked_element, unlocked_element)
+                    method(form, state, conf, random, allowed_types, unlocked_element_index, locked_element)
                 else
                     error 'what!?!?!? no method????'
                 end
