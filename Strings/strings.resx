@@ -291,16 +291,15 @@
   <data name="pmdorand/settings:monster.typing/retained_type=true" xml:space="preserve"><value>[color=#90baff]Both</value></data>
   <data name="pmdorand/settings:monster.typing/retained_type=1" xml:space="preserve"><value>[color=#ffbb90]First</value></data>
   <data name="pmdorand/settings:monster.typing/retained_type=2" xml:space="preserve"><value>[color=#ffbb90]Second</value></data>
-  <data name="pmdorand/settings:monster.typing/selection_rules" xml:space="preserve"><value>Selection Rules</value></data>
-  <data name="pmdorand/settings:monster.typing/selection_rules/banned_types" xml:space="preserve"><value>Banned Types</value></data>
-  <data name="pmdorand/settings:monster.typing/selection_rules/enforce_different_types" xml:space="preserve"><value>Enforce Different Types</value></data>
   <data name="pmdorand/settings:monster.typing/restrictions" xml:space="preserve"><value>Restrictions</value></data>
   <data name="pmdorand/settings:monster.typing/restrictions/allow_none" xml:space="preserve"><value>Allow No Type</value></data>
+  <data name="pmdorand/settings:monster.typing/restrictions/banned_types" xml:space="preserve"><value>Banned Types</value></data>
+  <data name="pmdorand/settings:monster.typing/restrictions/enforce_different_types" xml:space="preserve"><value>Enforce Different Types</value></data>
   <data name="pmdorand/settings:monster.typing/restrictions/type_effectivity" xml:space="preserve"><value>Effectivity</value></data>
   <data name="pmdorand/settings:monster.typing/restrictions/type_effectivity/mode" xml:space="preserve"><value>Mode</value></data>
   <data name="pmdorand/settings:monster.typing/restrictions/type_effectivity/mode=1" xml:space="preserve"><value>First vs. Second</value></data>
-  <data name="pmdorand/settings:monster.typing/restrictions/type_effectivity/mode=2" xml:space="preserve"><value>Each vs. Random</value></data>
-  <data name="pmdorand/settings:monster.typing/restrictions/type_effectivity/mode=3" xml:space="preserve"><value>Both vs. Random</value></data>
+  <data name="pmdorand/settings:monster.typing/restrictions/type_effectivity/mode=2" xml:space="preserve"><value>Second vs. First</value></data>
+  <data name="pmdorand/settings:monster.typing/restrictions/type_effectivity/mode=3" xml:space="preserve"><value>Each vs. Random</value></data>
   <data name="pmdorand/settings:monster.typing/restrictions/type_effectivity/minimum" xml:space="preserve"><value>Minimum</value></data>
   <data name="pmdorand/settings:monster.typing/restrictions/type_effectivity/maximum" xml:space="preserve"><value>Maximum</value></data>
 
@@ -354,6 +353,86 @@
     <value>
       When enabled, non-STAB moves roll between a limited list of selected types.
       Otherwise, when disabled, non-STAB moves can be any type.
+    </value>
+  </data>
+
+  <data name="pmdorand/documentation:monster.typing/retained_type">
+    <value>
+      Decides which, if any, types are kept instead of being randomized.
+      This can be the first, second, or both types.
+    </value>
+  </data>
+
+  <data name="pmdorand/documentation:monster.typing/retained_type=false">
+    <value>
+      No types are kept / both are randomized.
+    </value>
+  </data>
+
+  <data name="pmdorand/documentation:monster.typing/retained_type=1">
+    <value>
+      The first type is kept, while the second can be randomized.
+    </value>
+  </data>
+
+  <data name="pmdorand/documentation:monster.typing/retained_type=2">
+    <value>
+      The second type is kept, while the first can be randomized.
+      If "Allow No Type" is disabled, the type may still be randomized if the "Dual Type Chance" is above 0%.
+    </value>
+  </data>
+
+  <data name="pmdorand/documentation:monster.typing/retained_type=true">
+    <value>
+      Both types are kept, and neither are randomized.
+      This only has value if "Allow No Type" is disabled and the "Dual Type Chance" is above 0%.
+    </value>
+  </data>
+
+  <data name="pmdorand/documentation:monster.typing/restrictions/type_effectivity">
+    <value>
+      Restricts type selection choices based on their effectivity against another type.
+    </value>
+  </data>
+
+  <data name="pmdorand/documentation:monster.typing/restrictions/type_effectivity/mode">
+    <value>
+      Determines what way type selection is restricted.
+    </value>
+  </data>
+
+  <data name="pmdorand/documentation:monster.typing/restrictions/type_effectivity/mode=1">
+    <value>
+      Forces a relation between the first type against the second.
+      This means the second type must fit between the Minimum and Maximum below if attacked by the first type.
+    </value>
+  </data>
+
+  <data name="pmdorand/documentation:monster.typing/restrictions/type_effectivity/mode=2">
+    <value>
+      Forces a relation between the second type against the first.
+      This means the first type must fit between the Minimum and Maximum below if attacked by the second type.
+    </value>
+  </data>
+
+  <data name="pmdorand/documentation:monster.typing/restrictions/type_effectivity/mode=3">
+    <value>
+      Forces a relation between both types against something random.
+      This means a random selected type must fit between the Minimum and Maximum below if attacked by both types.
+    </value>
+  </data>
+
+  <data name="pmdorand/documentation:monster.typing/restrictions/type_effectivity/minimum">
+    <value>
+      Determines the minimum required effectivity for a type to be selectable.
+      For example, if using the "First vs. Second" mode, the first type must at least be this effective against the second type.
+    </value>
+  </data>
+
+  <data name="pmdorand/documentation:monster.typing/restrictions/type_effectivity/maximum">
+    <value>
+      Determines the maximum required effectivity for a type to be selectable.
+      For example, if using the "First vs. Second" mode, the first type must be at most this effective against the second type.
     </value>
   </data>
 

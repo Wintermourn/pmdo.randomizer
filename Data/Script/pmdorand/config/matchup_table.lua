@@ -13,6 +13,7 @@ function matchup.key_validator(key)
     return true
 end
 
+---@return any[]
 function matchup:get_default_value()
     return self:validate(self.default) and self.default or {}
 end
