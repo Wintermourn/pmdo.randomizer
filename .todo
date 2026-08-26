@@ -1,7 +1,7 @@
 Randomizer:
     Monster:
         [X] Stats
-        [ ] Typing
+        [X] Typing
             A couple ways to handle incompatible types: -
               * manual list of "type A cannot go with type B"
               * use type effectivity (type A cannot be super effective against type B)
@@ -36,8 +36,10 @@ Randomizer:
     Zone:
         [ ] Stats
             NoEXP, ExpPercent, LevelCap, TeamRestrict, BagRestrict, KeepTreasure, 
+        [ ] Monsters
+        [ ] Items
     Universal:
-        [ ] Type Matchups
+        [X] Type Matchups
     Naming:
         [ ] Monsters
         [ ] Items
@@ -49,8 +51,35 @@ Randomizer:
 UI:
     [X] Main Menu
     [ ] Saved Settings/Presets
-        Should these be stored in `SAVE/MODS/pmdorand`? Probably, right?
-    [X] Settings
+        These should probably be stored in `SAVE/MODS/pmdo-randomizer/configurations`.
+        Configs by the user go in `./personal`
+        Configs by others go in `./import`
+            or maybe just the base folder?
+        Configs to be given to others go in `./export`
+    [X] Component Configuration
+    [ ] Settings
+    Config Types:
+        [ ] Any
+        [X] Boolean
+        [X] Constant
+        [X] Dynamic Integer
+        [X] Enum
+        [X] Feature
+        [X] Float
+        [X] Integer
+        [ ] Limited List
+        [ ] List
+        [ ] Matchup Table
+        [X] Null
+        [X] Percentage
+        [ ] Set
+        [X] Stat
+        [ ] String
+        [X] Table
+        [ ] Variant
+        [X] Custom Display
+        [X] Custom Documentation
+        [X] Force Update
 Registries:
     Effects:
         [ ] Item
@@ -62,7 +91,7 @@ Settings:
     [ ] Always Flush
         After a pass iterates over a monster, write it to disk and forget about it.
         This means the data will not be stored in memory until the final related pass, but this also means a lot more writing to disk and checking diffs.
-    [ ] Export to Mod
+    [X] Export to Mod
         Solves the replay issue and makes it easier to share with others.
         After generation, prompt the user to reload mods.
         Include the configuration inside the folder as well.
