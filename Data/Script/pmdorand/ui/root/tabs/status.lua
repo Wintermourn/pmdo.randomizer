@@ -15,7 +15,7 @@ local strings = {
     component_span = STRINGS:FormatKey 'pmdorand:stats.components.span',
     start_randomizer = STRINGS:FormatKey 'pmdorand:randomize',
     start_randomizer_grayed = '[color=#999999]'.. STRINGS:FormatKey 'pmdorand:randomize',
-    browse_configurations = STRINGS:FormatKey 'pmdorand:configurations.browse',
+    browse_configurations = '[color=#999999]'.. STRINGS:FormatKey 'pmdorand:configurations.browse',
     states = {
         idle = '[color=#333333]'.. STRINGS:FormatKey 'pmdorand/state:idle',
         generating = STRINGS:FormatKey 'pmdorand/state:generating',

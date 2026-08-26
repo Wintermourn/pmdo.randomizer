@@ -172,7 +172,7 @@ function public.open()
 
     local realElements, stateElements = state.menu.Elements, state.elements
 
-    stateElements.frame.window_name = create_text('Randomizer [color=#aaaaaa]'.. header.Version:ToString(), 10, 7)
+    stateElements.frame.window_name = create_text('Randomizer [color=#aaaaaa]'.. header.Version:ToString() ..'β', 10, 7)
     stateElements.frame.title = create_text('?', mw - 10, 7, RogueElements.DirH.Right)
 
     realElements:Add(stateElements.frame.window_name)
